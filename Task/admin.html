@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-
     <style>
         * {
             box-sizing: border-box;
@@ -90,6 +89,21 @@
             background-color: #0056b3;
         }
 
+        .export-btn {
+            background-color: #059669;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .export-btn:hover {
+            background-color: #047857;
+        }
+
         .logout-link {
             color: red;
             text-decoration: none;
@@ -109,7 +123,7 @@
 
         .intern-list h1 {
             color: darkblue;
-            margin: 0 0 15px 0;
+            margin: 0;
         }
 
         .table-container {
@@ -126,7 +140,7 @@
             padding: 10px 12px;
             text-align: left;
             border: 2px solid black;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         th {
@@ -142,8 +156,11 @@
             cursor: pointer;
             font-size: 12px;
         }
+
+        .delete-btn:hover {
+            background-color: #b91c1c;
+        }
     </style>
-    
 </head>
 <body>
     <div class="wrapper">
@@ -183,19 +200,20 @@
         </div>
 
         <div class="intern-list">
-            <h1>Intern List</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h1>Intern List</h1>
+                <button type="button" class="export-btn" onclick="exportToCSV();">Export CSV</button>
+            </div>
             <div class="table-container">
                 <table id="intern-table">
-                    
+
                 </table>
             </div>
         </div>
     </div>
     
     <script>
-
         if (localStorage.getItem('isAdmin') !== 'true') {
-
             alert("Please log in as Admin first!");        
             window.location.href = 'login.html';
         }
@@ -204,79 +222,121 @@
             localStorage.removeItem('isAdmin');
             window.location.href = 'login.html';
         }
-    
-    function addIntern(){
 
-        const name=document.getElementById('internName').value;
-        const email=document.getElementById('internEmail').value;
-        const role=document.getElementById('internRole').value;
-        const manager=document.getElementById('manager').value;
+        function calculateTaskAvg(intern) {
+            const tasks = intern.tasks || [];
+            const graded = tasks
+                .filter(t => t.score !== '-' && t.score !== '' && !isNaN(Number(t.score)))
+                .map(t => Number(t.score));
 
-        const form=document.getElementById('addIntern');
+            if (graded.length === 0) return '-';
+            const total = graded.reduce((sum, val) => sum + val, 0);
+            return (total / graded.length).toFixed(1) + " / 100";
+        }
 
-        const savedData=localStorage.getItem('interns');
-        const interns=JSON.parse(savedData) || [];
+        function addIntern(){
+            const name = document.getElementById('internName').value.trim();
+            const email = document.getElementById('internEmail').value.trim();
+            const role = document.getElementById('internRole').value;
+            const manager = document.getElementById('manager').value;
 
+            const savedData = localStorage.getItem('interns');
+            const interns = JSON.parse(savedData) || [];
 
-        const newIntern={
-            name:name,
-            email:email,
-            role:role,
-            manager:manager,
-            week1:'-',
-            week2:'-',
-            week3:'-',
-            week4:'-',
-        };
+            if (interns.some(i => i.email.toLowerCase() === email.toLowerCase())) {
+                alert("An intern with this email already exists!");
+                return;
+            }
 
-        interns.push(newIntern);
-        localStorage.setItem('interns', JSON.stringify(interns));
+            interns.push({ name, email, role, manager, tasks: [] });
+            localStorage.setItem('interns', JSON.stringify(interns));
 
-        form.reset();
-        showIntern();
-    }
-    
-    function showIntern(){
+            document.getElementById('addIntern').reset();
+            showIntern();
+            alert(`Intern ${name} added successfully!`);
+        }
 
-        const savedData=localStorage.getItem('interns');
-        const interns=JSON.parse(savedData) || [];
+        function showIntern(){
+            const savedData = localStorage.getItem('interns');
+            const interns = JSON.parse(savedData) || [];
+            const table = document.getElementById('intern-table');
 
-        const table=document.getElementById('intern-table');
+            table.innerHTML = `
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Manager</th>
+                <th>Average Task Score</th>
+                <th>Action</th>
+            </tr>`;
 
-        table.innerHTML=`
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Manager</th>
-            <th>Action</th>
-        </tr>`;
+            if (interns.length === 0) {
+                table.insertRow().innerHTML = `<td colspan="6" style="text-align:center; padding: 20px;">No interns registered yet.</td>`;
+                return;
+            }
 
-        for(let i=0;i<interns.length;i++){
-  
-            const row=table.insertRow();
-            row.insertCell(0).textContent=interns[i].name;
-            row.insertCell(1).textContent=interns[i].email;
-            row.insertCell(2).textContent=interns[i].role;
-            row.insertCell(3).textContent=interns[i].manager;
-            row.insertCell(4).innerHTML=`<button class='delete-btn' onclick="deleteIntern(${i})">Delete</button>`;   
-        } 
-    }
+            for (let i = 0; i < interns.length; i++) {
+                const row = table.insertRow();
+                row.insertCell(0).textContent = interns[i].name;
+                row.insertCell(1).textContent = interns[i].email;
+                row.insertCell(2).textContent = interns[i].role;
+                row.insertCell(3).textContent = interns[i].manager;
+                row.insertCell(4).textContent = calculateTaskAvg(interns[i]);
+                row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern(${i})">Delete</button>`;   
+            } 
+        }
 
-    function deleteIntern(index){
+        function deleteIntern(index){
+            const savedData = localStorage.getItem('interns');
+            const interns = JSON.parse(savedData) || [];
+            const targetName = interns[index] ? interns[index].name : 'this intern';
 
-        const savedData=localStorage.getItem('interns');
-        const interns=JSON.parse(savedData) || [];
+            if (!confirm(`Are you sure you want to delete ${targetName}?`)) {
+                return;
+            }
 
-        interns.splice(index,1);
-        localStorage.setItem('interns',JSON.stringify(interns));  
+            interns.splice(index, 1);
+            localStorage.setItem('interns', JSON.stringify(interns));  
+            showIntern();
+        }
 
-        showIntern();
-    }
+        function exportToCSV() {
+            const savedData = localStorage.getItem('interns');
+            const interns = JSON.parse(savedData) || [];
 
-    window.onload=showIntern;
-    
+            if (interns.length === 0) {
+                alert("No data to export!");
+                return;
+            }
+
+            let csv = "Intern Name,Email,Role,Manager,Task Assigned,Status,Score,Average Score\n";
+
+            interns.forEach(intern => {
+                const avg = calculateTaskAvg(intern);
+                const tasks = intern.tasks || [];
+
+                if (tasks.length === 0) {
+                    csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","No tasks","N/A","N/A","${avg}"\n`;
+                } else {
+                    tasks.forEach(t => {
+                        csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","${t.title.replace(/"/g, '""')}","${t.status}","${t.score}","${avg}"\n`;
+                    });
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ktt_intern_tasks.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = showIntern;
     </script>
-
 </body>
 </html>

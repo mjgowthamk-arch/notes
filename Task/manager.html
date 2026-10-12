@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Dashboard</title>
-    
+    <title>Manager Dashboard</title> 
     <style>
         * {
             box-sizing: border-box;
@@ -133,7 +132,6 @@
             background-color: #f1f5f9;
         }
     </style>
-
 </head>
 <body>
     <div class="wrapper">
@@ -142,27 +140,17 @@
                 <h1>Manager Dashboard</h1>
                 <h2 id="welcomeText">Welcome, Manager!</h2>
 
-                <h3>Assign Weekly Performance</h3>
-
-                <form id="internForm" onsubmit="event.preventDefault(); addPoints();">
+                <h3>Assign Task</h3>
+                <form id="taskForm" onsubmit="event.preventDefault(); assignTask();">
+    
                     <label for="selectIntern">Select Intern:</label>
-                    <select id="selectIntern" required>
-                        
-                    </select>
+                    <select id="selectIntern" required></select>
+    
+                    <label for="taskTitle">Task Assigned:</label>
+                    <textarea id="taskTitle" placeholder="e.g., Intern Management System" style="width: 260px; height: 100px; padding: 5px; margin-top:10px;" required></textarea>
 
-                    <label for="week">Weekly performance:</label>
-                    <select id="week" required>
-                        <option value="">-- Select week --</option>
-                        <option value="week1">Week 1</option>
-                        <option value="week2">Week 2</option>
-                        <option value="week3">Week 3</option>
-                        <option value="week4">Week 4</option>
-                    </select>
+                    <button type="submit" class="add-btn">Assign Task</button>
 
-                    <label for="points">Score Points (0 - 100):</label>
-                    <input type="number" id="points" placeholder="e.g., 85" min="0" max="100" required>
-
-                    <button type="submit" class="add-btn">Submit Score</button>
                 </form>
             </div>
 
@@ -171,6 +159,12 @@
 
         <div class="manager-table-panel">
             <h1>My Assigned Interns</h1>
+                      
+            <div style="margin-bottom: 12px;">
+                <input type="text" id="tableSearch" placeholder="Search by name, email, or task" onkeyup="filterTable()"
+                style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+            </div>
+            
             <div class="table-container">
                 <table id="intern-table">
 
@@ -182,88 +176,190 @@
     <script>
 
     const myManagerName = localStorage.getItem('currentManager');
-
     if (!myManagerName) {
         alert("Access Denied! Please log in first.");
         window.location.href = "login.html"; 
     }
-
     document.getElementById('welcomeText').textContent = "Welcome, " + myManagerName + "!";
 
     function loadData() {
-
         const savedData = localStorage.getItem('interns');
         const interns = JSON.parse(savedData) || [];
 
         const select = document.getElementById('selectIntern');
+        select.innerHTML = '<option value="">-- Select Intern --</option>';
 
-        select.innerHTML='<option value="">-- Select Intern --</option>';
+        const assignedInterns = interns.filter(i => i.manager === myManagerName);
 
-        for (let i = 0; i < interns.length; i++) {
-
-            if (interns[i].manager === myManagerName) {
-                const option = document.createElement('option');
-                option.value = interns[i].name;
-                option.textContent = interns[i].name + " (" + interns[i].role + ")";
-                select.append(option);
-            }
-        }
+        assignedInterns.forEach(intern => {
+            const opt = document.createElement('option');
+            opt.value = intern.email;
+            opt.textContent = `${intern.name} (${intern.role})`;
+            select.appendChild(opt);
+        });
 
         const table = document.getElementById('intern-table');
         table.innerHTML = `
             <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Week 1</th>
-                <th>Week 2</th>
-                <th>Week 3</th> 
-                <th>Week 4</th>
+                <th>Intern</th>
+                <th>Task Assigned</th>
+                <th>Status</th>
+                <th>Score</th>
+                <th>Feedback</th>
+                <th>Action</th>
             </tr>
         `;
 
-        for (let i = 0; i < interns.length; i++) {
-
-            if (interns[i].manager === myManagerName) {
+        let hasTasks = false;
+        assignedInterns.forEach(intern => {
+            (intern.tasks || []).forEach(task => {
+                hasTasks = true;
                 const row = table.insertRow();
-                row.insertCell(0).textContent = interns[i].name;
-                row.insertCell(1).textContent = interns[i].role;
-                row.insertCell(2).textContent = interns[i].week1;
-                row.insertCell(3).textContent = interns[i].week2;
-                row.insertCell(4).textContent = interns[i].week3;
-                row.insertCell(5).textContent = interns[i].week4;
-            }
+                row.insertCell(0).textContent = intern.name;
+
+                const taskCell = row.insertCell(1);
+                taskCell.innerHTML = `
+                <textarea id="task_title_${task.id}" style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;">${task.title}</textarea>
+                <small style="color: #64748b; display: block; margin-top: 4px;">Assigned: ${task.assignedDate || 'N/A'}</small>
+                `;
+
+                const statusCell = row.insertCell(2);
+                statusCell.innerHTML = `
+                <select onchange="updateStatus('${intern.email}', ${task.id}, this.value)" style="padding: 4px; font-size: 13px;">
+                    <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                    <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    </select>
+                    `;
+
+                    const scoreCell = row.insertCell(3);
+                    scoreCell.innerHTML = `
+                    <input type="number" id="score_${task.id}" min="0" max="100" style="width: 44px; padding: 3px; text-align: center;" placeholder="0" value="${task.score !== '-' ? task.score : ''}">
+                    <span style="font-size: 12px; font-weight: bold;">/ 100</span>
+                    `;
+                    const feedbackCell = row.insertCell(4);
+                    feedbackCell.innerHTML = `
+                    <textarea id="fb_${task.id}" style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;" placeholder="Add feedback...">${task.feedback ? task.feedback : ''}</textarea>
+                    `;
+                    const actionCell = row.insertCell(5);
+                    actionCell.innerHTML = `
+                    <button style="background:green; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer;" onclick="saveScoreAndFeedback('${intern.email}', ${task.id})">Save</button>
+                    <button type="button" style="background:red; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer; margin-top:4px;" onclick="deleteTask('${intern.email}', ${task.id})">Delete</button>
+                    `;
+
+            });
+        });
+
+        if (!hasTasks) {
+            table.insertRow().innerHTML = `<td colspan="6" style="text-align:center; padding: 20px;">No tasks assigned yet.</td>`;
         }
     }
 
-    function addPoints() {
-        const selectedName = document.getElementById('selectIntern').value;
-        const selectedWeek = document.getElementById('week').value;
-        const points = document.getElementById('points').value;
+    function assignTask() {
+        const email = document.getElementById('selectIntern').value;
+        const title = document.getElementById('taskTitle').value.trim();
 
         const savedData = localStorage.getItem('interns');
         const interns = JSON.parse(savedData) || [];
+        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
 
-        for (let i = 0; i < interns.length; i++) {
-            if (interns[i].name === selectedName) {
-                interns[i][selectedWeek] = points; 
-                break;
-            }
-        }
+        if (!intern) return;
+        if (!intern.tasks) intern.tasks = [];
+
+        const todayDate = new Date().toLocaleDateString('en-GB'); 
+
+        intern.tasks.push({
+            id: Date.now(),
+            title: title,
+            assignedDate: todayDate,
+            status: 'Pending',
+            score: '-'
+        });
 
         localStorage.setItem('interns', JSON.stringify(interns));
-
-        alert(points + " points assigned for " + selectedName + " (" + selectedWeek + ")");
-
-        document.getElementById('internForm').reset();
+        document.getElementById('taskForm').reset();
         loadData();
     }
 
-    function logout() {
-        localStorage.removeItem('currentManager'); 
-        window.location.href = "login.html";       
+    function saveScoreAndFeedback(email, taskId) {
+        const val = document.getElementById(`score_${taskId}`).value.trim();
+        if (val === '' || isNaN(Number(val)) || Number(val) < 0 || Number(val) > 100) {
+            alert("Please enter a score between 0 and 100.");
+            return;
+        }
+
+        const savedData = localStorage.getItem('interns');
+        const interns = JSON.parse(savedData) || [];
+        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+
+        const feedbackVal = document.getElementById(`fb_${taskId}`).value.trim();
+
+        const titleElem = document.getElementById(`task_title_${taskId}`);
+        const titleVal = titleElem ? titleElem.value.trim() : '';
+
+        const task = (intern.tasks || []).find(t => t.id === taskId);
+        if (task) {
+            task.title = titleVal;
+            task.score = Number(val);
+            task.feedback = feedbackVal;
+
+            localStorage.setItem('interns', JSON.stringify(interns));
+            alert(`Score saved: ${val} points.`);
+            loadData();
+        }
     }
 
-    window.onload = loadData;
+    function updateStatus(email, taskId, newStatus) {
+        const savedData = localStorage.getItem('interns');
+        const interns = JSON.parse(savedData) || [];
+        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+
+        const task = (intern.tasks || []).find(t => t.id === taskId);
+        if (task) {
+            task.status = newStatus;
+            localStorage.setItem('interns', JSON.stringify(interns));
+            alert(`Status updated to ${newStatus}.`);
+        }
+    }
+
+    function deleteTask(email, taskId) {
+        if (!confirm("Are you sure you want to delete this task?")) {
+            return;
+        }
+        const savedData = localStorage.getItem('interns');
+        const interns = JSON.parse(savedData) || [];  
+        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+
+        if (!intern || !intern.tasks) return;
+        intern.tasks = intern.tasks.filter(t => t.id !== taskId);
+        localStorage.setItem('interns', JSON.stringify(interns));
+        loadData(); 
+    }
+
+    function filterTable() {
+        const input = document.getElementById("tableSearch");
+        const filter = input.value.toLowerCase();
+
+        const table = document.querySelector(".table-container table");
+        const rows = table.getElementsByTagName("tr");
+        
+        for (let i = 1; i < rows.length; i++) {
+                const rowText = rows[i].textContent.toLowerCase();
+                if (rowText.includes(filter)) {    
+                    rows[i].style.display = "";
+
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentManager'); 
+            window.location.href = "login.html";      
+        }        
+        window.onload = loadData;
+
 </script>
 
 </body>

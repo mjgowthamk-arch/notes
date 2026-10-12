@@ -135,7 +135,7 @@
 
                 <div class="info-card">
                     <div class="info-label">Average Performance</div>
-                    <div class="info-value" id="ratingValue">-</div>
+                    <div class="info-value" id="avgRating">-</div>
                 </div>
             </div>
 
@@ -143,7 +143,7 @@
         </div>
 
         <div class="intern-task">
-            <h1>My Weekly Performance Scores</h1>
+            <h1>My Assigned Tasks & Scores</h1>
 
             <div class="table-container">
                 <table id="performance-table">
@@ -155,15 +155,19 @@
 
     <script>
     const isStudent = localStorage.getItem('isStudent');
+    
     if (!isStudent) {
         alert("Access Denied! Please log in first.");
-        window.location.href = "login.html";
+        window.location.href='login.html';
     }
+
 
     function loadStudentData() {
         const savedData = localStorage.getItem('interns');
         const interns = JSON.parse(savedData) || [];
-        const student = interns[0];
+
+        const currentEmail = localStorage.getItem('currentStudentEmail') || '';
+        const student = interns.find(i=>i.email.toLowerCase()===currentEmail.toLowerCase());
 
         if (!student) {
             alert("Student record not found!");
@@ -175,55 +179,80 @@
         document.getElementById('roleValue').textContent = student.role;
         document.getElementById('managerValue').textContent = student.manager;
 
-        const weeks = [student.week1, student.week2, student.week3, student.week4];
-        const scoredWeeks = weeks.filter(w => w !== '-' && !isNaN(Number(w)));
+        const tasks=student.tasks || [];
 
-        if (scoredWeeks.length > 0) {
-            const total = scoredWeeks.reduce((acc, curr) => acc + Number(curr), 0);
-            const avg = (total / scoredWeeks.length).toFixed(1);
-            document.getElementById('ratingValue').textContent = avg + " / 100";
+        const gradedScores = tasks
+        .filter(t=>t.score !== '-' && t.score !== '' && !isNaN(Number(t.score)))
+        .map(t=>Number(t.score));
+
+        if (gradedScores.length > 0) {
+            const total = gradedScores.reduce((sum, curr) => sum + Number(curr), 0);
+            const avg = (total / gradedScores.length).toFixed(1);
+            document.getElementById('avgRating').textContent = `${avg} / 100 (Task Completed : ${gradedScores.length} )`;
         } else {
-            document.getElementById('ratingValue').textContent = "Pending (No scores yet)";
+            document.getElementById('avgRating').textContent = "-";
         }
+        
         const table = document.getElementById('performance-table');
 
         table.innerHTML = `
-
         <tr>
-            <th>Week</th>
-            <th>Score (0 - 100)</th>
+            <th>Task Assigned</th>
             <th>Status</th>
-        </tr>
-        <tr>
-            <td>Week 1</td>
-            <td>${student.week1}</td>
-            <td>${student.week1 !== '-' ? 'Graded' : 'Pending'}</td>
-        </tr>
-        <tr>
-            <td>Week 2</td>
-            <td>${student.week2}</td>
-            <td>${student.week2 !== '-' ? 'Graded' : 'Pending'}</td>
-        </tr>
-        <tr>
-            <td>Week 3</td>
-            <td>${student.week3}</td>
-            <td>${student.week3 !== '-' ? 'Graded' : 'Pending'}</td>
-        </tr>
-        <tr>
-            <td>Week 4</td>
-            <td>${student.week4}</td>
-            <td>${student.week4 !== '-' ? 'Graded' : 'Pending'}</td>
-        </tr>
-        `;
+            <th>Score</th>
+            <th>Feedback</th>
+       </tr>
+       `;
+
+       if (tasks.length === 0) {
+        table.insertRow().innerHTML = `<td colspan="4" style="text-align:center; padding: 20px;">No tasks assigned yet.</td>`;
+        return;
     }
+    
+    tasks.forEach(task => {
+        const row = table.insertRow();
+        
+        row.insertCell(0).textContent = task.title;
+
+        const statusCell = row.insertCell(1);
+        statusCell.innerHTML = `
+        <select onchange="updateTaskStatus(${task.id}, this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
+            <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+            <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+            `;
+            
+            row.insertCell(2).textContent = task.score !== '-' ? `${task.score} / 100` : '-';
+
+            row.insertCell(3).textContent = task.feedback ? task.feedback : '-';
+        });
+    }
+    
+    function updateTaskStatus(taskId, newStatus) {
+    const savedData = localStorage.getItem('interns');
+    const interns = JSON.parse(savedData) || [];
+    const currentEmail = localStorage.getItem('currentStudentEmail') || '';
+
+    const student = interns.find(i => i.email.toLowerCase() === currentEmail.toLowerCase());
+    if (!student || !student.tasks) return;
+
+    const task = student.tasks.find(t => t.id === taskId);
+    if (task) {
+        task.status = newStatus;
+        localStorage.setItem('interns', JSON.stringify(interns));
+        alert(`Status updated to "${newStatus}"!`); 
+    }
+}
 
     function logout() {
         localStorage.removeItem('isStudent');
+        localStorage.removeItem('currentStudentEmail');
         window.location.href = "login.html";
     }
 
     window.onload = loadStudentData;
-    </script>
+</script>
 
 </body>
 </html>

@@ -5,100 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/images/login.png" type="image/png">
     <title>Login - KTT IMS</title>
-    
     <style>
-        * {
-            box-sizing: border-box;
-        }
+    * {
+        box-sizing: border-box;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: whitesmoke;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: whitesmoke;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
     
-        .login-image img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            object-fit: cover;
-        }
+    .login-image img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;        
+    }
 
-        .wrapper {
-            display: flex; 
-            width: 900px;
-            height: 600px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .login-image {
-            flex: 1;
-        }
-
-        .login-form {
-            flex: 1;     
-            background-color: #334155;
-            color: white;
-            padding: 40px 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .login-form h1 {
-            text-align: center;
-            margin: 0 0 10px 0;
-            font-size: 25px;
-        }
-
-        .login-form h2 {
-            text-align: center;
-            margin: 0 0 25px 0;
-            font-size: 18px;
-            font-weight: normal;
-            color: #cbd5e1;
-        }
-
-        .login-form label {
-            display: block;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-
-        .login-form input,
-        .login-form select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            margin-bottom: 12px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background-color: blue;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .login-btn:hover {
-            background-color: #0056b3;
-        }
+    .wrapper {
+        display: flex; 
+        width: 900px;
+        height: 600px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
     
+    .login-image {
+        flex: 1;    
+    }
+
+    .login-form {
+        flex: 1;     
+        background-color: #334155;
+        color: white;
+        padding: 40px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;    
+    }
+
+    .login-form h1 {
+        text-align: center;
+        margin: 0 0 10px 0;
+        font-size: 25px;    
+    }
+
+    .login-form h2 {
+        text-align: center;
+        margin: 0 0 25px 0;
+        font-size: 18px;
+        font-weight: normal;
+        color: #cbd5e1;    
+    }
+
+    .login-form label {
+        display: block;
+        font-size: 14px;
+        margin-top: 10px;    
+    }
+
+    .login-form input,
+    .login-form select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;    
+        margin-bottom: 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;        
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        background-color: blue;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: bold;
+    }
+
+    .login-btn:hover {
+        background-color: #0056b3;
+    }    
     </style>
-
 </head>
 <body>
     <div class="wrapper">
@@ -107,60 +104,70 @@
         </div>
 
         <div class="login-form">
+
             <h1>KT Telematics Solutions</h1>
             <h2>Intern Management Portal</h2>
 
             <form id="loginForm" onsubmit="event.preventDefault(); login();">
+
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" placeholder="admin or manager or student" required>
+                <input type="text" id="username" name="username" placeholder="admin / manager / student@gmail.com" required>
 
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" placeholder="123" required>
 
                 <label for="role">Role:</label>
                 <select id="role" name="role" required>
+                    
                     <option value="">Select Role</option>
                     <option value="admin">HR Admin</option>
                     <option value="Manager 1">Manager 1</option>
                     <option value="Manager 2">Manager 2</option>
                     <option value="Intern">Intern</option>
+               
                 </select>
-                
+            
                 <button type="submit" class="login-btn">Login</button>
             </form>
         </div>
     </div>
-
+    
     <script>
-        
         function login(){
-
             const user=document.getElementById('username').value;
-            const password=document.getElementById('password').value;
+            const password=document.getElementById('password').value;  
             const role=document.getElementById('role').value;
   
             if (user==='admin' && password==='123' && role==='admin'){
                 localStorage.setItem('isAdmin', 'true');
-                window.location.href='admin.html';  
+                window.location.href='admin.html';      
             }
 
             else if(user==='manager' && password==='123' && (role==='Manager 1' || role==='Manager 2')){
-
                 localStorage.setItem('currentManager', role);
                 window.location.href='manager.html'; 
             }
 
-            else if(user==='student' && password==='123' && role==='Intern'){
-                localStorage.setItem('isStudent','true');
-                window.location.href='intern.html';
-            }
+            else if (password === '123' && role === 'Intern') {
 
-            
+                const interns = JSON.parse(localStorage.getItem('interns')) || [];            
+                const matchedIntern = interns.find(i => i.email.toLowerCase() === user.toLowerCase());
+
+                if (matchedIntern) {
+                    localStorage.setItem('isStudent', 'true');
+                    localStorage.setItem('currentStudentEmail', matchedIntern.email);   
+                    window.location.href = 'intern.html';
+                } 
+               
+                else {
+                    alert('No intern found with this email address. Please check and try again.');
+                }
+            }   
+
             else {
                   alert('Invalid. Please try again')
             }
         }
-
     </script>
 </body>
 </html>
