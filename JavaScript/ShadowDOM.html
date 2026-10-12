@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM</title>
+</head>
+<body>
+
+   
+    <details>
+        <summary>📂 Candy menu</summary>
+        <ul>
+            <li>Lollipop</li>
+            <li>Fruit Toast</li>
+            <li>Cup Cake</li>
+         </ul>
+    </details>
+
+    <hr>
+
+    <div class="menu closed">
+        <div onclick="this.parentElement.classList.toggle('closed')" style="cursor:pointer">📂 Candy menu</div>
+        <ul>
+            <li>Lollipop</li>
+            <li>Fruit Toast</li>
+            <li>Cup Cake</li>
+        </ul>
+    </div>
+
+<style>
+.closed ul { display: none; }
+</style>
+
+// ----------------------------------------
+
+<!-- Main page HTML (Light DOM) -->
+<p>This should stay the default text color.</p>
+<user-card></user-card>
+
+<script>
+  class UserCard extends HTMLElement {
+    constructor() {
+      super();
+      
+      // 1. Attach an 'open' shadow DOM to this element
+      this.attachShadow({ mode: 'open' });
+      
+      // 2. Set the innerHTML of the shadow root to include:
+      //    - A <style> tag making 'p' tags purple
+      //    - A <p> tag that says "I am inside the shadow!"
+      this.shadowRoot.innerHTML = `
+        <style>
+          p { color: purple; }
+        </style>
+        <p>I am inside the shadow!</p>
+      `;
+    }
+  }
+
+  // 3. Define the custom element as 'user-card'
+  customElements.define('user-card', UserCard);
+</script>
+
+// ----------------------------------------
+
+<!-- 1. Create a template containing a single <li> element -->
+<template id="temp">
+  <li></li>
+</template>
+
+
+<ul id="fruit-list"></ul>
+
+<script>
+  const fruits = ['Apple', 'Banana', 'Cherry'];
+  const listContainer = document.getElementById('fruit-list');
+  
+  // 2. Grab your template by its ID
+  const temp = document.getElementById('temp');
+
+  // 3. Loop over the 'fruits' array
+  for (const fruit of fruits) {
+    const clone = temp.content.cloneNode(true);
+    clone.querySelector('li').textContent = fruit;
+    listContainer.append(clone);
+  }
+
+  // 4. Inside the loop, clone the template's content
+  // 5. Set the textContent of the cloned <li> to the current fruit  
+  // 6. Append the clone to the 'listContainer'
+</script>
+
+// ----------------------------------------
+
+  
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: lightgray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 95%;
+            height: 90vh;
+            gap: 25px;
+        }
+
+        .intern-profile {
+            flex: 1;
+            background-color: white;
+            border-radius: 5px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .intern-profile h1 {
+            color: darkblue;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+        }
+
+        .intern-profile h2 {
+            color: darkblue;
+            margin: 0 0 20px 0;
+            font-size: 18px;
+        }
+
+        .info-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            font-size: 13px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .logout-link {
+            color: red;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .intern-task {
+            flex: 2;
+            background-color: white;
+            border-radius: 5px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intern-task h1 {
+            color: darkblue;
+            margin: 0 0 15px 0;
+            font-size: 24px;
+        }
+
+        .table-container {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 2px solid black;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="intern-profile">
+            <div>
+                <h1>Student Dashboard</h1>
+                <h2 id="welcomeText">Welcome!</h2>
+
+                <div class="info-card">
+                    <div class="info-label">Assigned Role</div>
+                    <div class="info-value" id="roleValue">-</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-label">Assigned Manager</div>
+                    <div class="info-value" id="managerValue">-</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-label">Average Performance</div>
+                    <div class="info-value" id="ratingValue">-</div>
+                </div>
+            </div>
+
+            <a href="#" class="logout-link" onclick="logout();">Logout</a>
+        </div>
+
+        <div class="intern-task">
+            <h1>My Weekly Performance Scores</h1>
+
+            <div class="table-container">
+                <table id="performance-table">
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const isStudent = localStorage.getItem('isStudent');
+    if (!isStudent) {
+        alert("Access Denied! Please log in first.");
+        window.location.href = "login.html";
+    }
+
+    function loadStudentData() {
+        const savedData = localStorage.getItem('interns');
+        const interns = JSON.parse(savedData) || [];
+        const student = interns[0];
+
+        if (!student) {
+            alert("Student record not found!");
+            logout();
+            return;
+        }
+
+        document.getElementById('welcomeText').textContent = "Welcome, " + student.name + "!";
+        document.getElementById('roleValue').textContent = student.role;
+        document.getElementById('managerValue').textContent = student.manager;
+
+        const weeks = [student.week1, student.week2, student.week3, student.week4];
+        const scoredWeeks = weeks.filter(w => w !== '-' && !isNaN(Number(w)));
+
+        if (scoredWeeks.length > 0) {
+            const total = scoredWeeks.reduce((acc, curr) => acc + Number(curr), 0);
+            const avg = (total / scoredWeeks.length).toFixed(1);
+            document.getElementById('ratingValue').textContent = avg + " / 100";
+        } else {
+            document.getElementById('ratingValue').textContent = "Pending (No scores yet)";
+        }
+        const table = document.getElementById('performance-table');
+
+        table.innerHTML = `
+
+        <tr>
+            <th>Week</th>
+            <th>Score (0 - 100)</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Week 1</td>
+            <td>${student.week1}</td>
+            <td>${student.week1 !== '-' ? 'Graded' : 'Pending'}</td>
+        </tr>
+        <tr>
+            <td>Week 2</td>
+            <td>${student.week2}</td>
+            <td>${student.week2 !== '-' ? 'Graded' : 'Pending'}</td>
+        </tr>
+        <tr>
+            <td>Week 3</td>
+            <td>${student.week3}</td>
+            <td>${student.week3 !== '-' ? 'Graded' : 'Pending'}</td>
+        </tr>
+        <tr>
+            <td>Week 4</td>
+            <td>${student.week4}</td>
+            <td>${student.week4 !== '-' ? 'Graded' : 'Pending'}</td>
+        </tr>
+        `;
+    }
+
+    function logout() {
+        localStorage.removeItem('isStudent');
+        window.location.href = "login.html";
+    }
+
+    window.onload = loadStudentData;
+    </script>
+
+</body>
+</html>
