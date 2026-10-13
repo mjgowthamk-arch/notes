@@ -46,7 +46,7 @@
         .admin-dashboard h2 {
             color: darkblue;
             margin: 0 0 20px 0;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .admin-dashboard h3 {
@@ -237,7 +237,9 @@
                 return;
             }
 
-            interns.push({ name, email, role, manager, tasks: [] });
+            const joinDate=new Date().toLocaleDateString('en-GB');
+
+            interns.push({ name, email, role, joinDate, manager, tasks: [] });
             localStorage.setItem('interns', JSON.stringify(interns));
 
             document.getElementById('addIntern').reset();
@@ -272,7 +274,25 @@
                 row.insertCell(1).textContent = intern.email;
                 row.insertCell(2).textContent = intern.role;
                 row.insertCell(3).textContent = intern.manager;
-                row.insertCell(4).textContent = calculateTaskAvg(intern);
+
+                const a=row.insertCell(4);
+                const returnVal = calculateTaskAvg(intern);
+                a.textContent=returnVal;
+
+                let score=parseFloat(returnVal);
+
+                if (returnVal!=='-'){
+                    if (score<40){
+                        a.style.color='red';
+                    }
+                    else if (score>=80){
+                        a.style.color='green';
+                    }
+                    else{
+                        a.style.color='orange'
+                    }
+                } 
+                 
                 row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern('${intern.email}')">Delete</button>`;   
             });
         }
@@ -299,7 +319,7 @@
             }
 
             if (confirm(`Delete ${target.name}?`)) {
-                interns = interns.filter(i => i.email !== email);
+                interns = interns.filter(i => i.email.toLowerCase() !== email.toLowerCase());
                 localStorage.setItem('interns', JSON.stringify(interns));
                 showIntern();
             }

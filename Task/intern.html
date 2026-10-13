@@ -40,18 +40,18 @@
         .intern-profile h1 {
             color: darkblue;
             margin: 0 0 5px 0;
-            font-size: 24px;
+            font-size: 30px;
         }
 
         .intern-profile h2 {
             color: darkblue;
             margin: 0 0 20px 0;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .info-card {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background-color: white;
+            border: 1px solid ghostwhite;
             border-radius: 6px;
             padding: 15px;
             margin-bottom: 12px;
@@ -59,16 +59,15 @@
 
         .info-label {
             font-weight: bold;
-            font-size: 13px;
-            color: #64748b;
+            font-size: 15px;
             text-transform: uppercase;
             margin-bottom: 4px;
         }
 
         .info-value {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            color: #1e293b;
+            color: darkgreen;
         }
 
         .logout-link {
@@ -161,7 +160,6 @@
         window.location.href='login.html';
     }
 
-
     function loadStudentData() {
         const savedData = localStorage.getItem('interns');
         const interns = JSON.parse(savedData) || [];
@@ -223,27 +221,44 @@
             </select>
             `;
             
-            row.insertCell(2).textContent = task.score !== '-' ? `${task.score} / 100` : '-';
+            const scoreText=row.insertCell(2)
+            scoreText.textContent = task.score !== '-' ? `${task.score} / 100` : '-';
+            
+            if(task.score>=80){
+                scoreText.style.color='green';
+            }
+            
+            else if(task.score<50){
+                scoreText.style.color='red';
+            }
+            
+            else {
+                if (task.score<80 && task.score>=50){
+                    scoreText.style.color='orange';
+                }
+            }
 
             row.insertCell(3).textContent = task.feedback ? task.feedback : '-';
         });
     }
     
     function updateTaskStatus(taskId, newStatus) {
-    const savedData = localStorage.getItem('interns');
-    const interns = JSON.parse(savedData) || [];
-    const currentEmail = localStorage.getItem('currentStudentEmail') || '';
 
-    const student = interns.find(i => i.email.toLowerCase() === currentEmail.toLowerCase());
-    if (!student || !student.tasks) return;
+        const savedData = localStorage.getItem('interns');
+        const interns = JSON.parse(savedData) || [];
 
-    const task = student.tasks.find(t => t.id === taskId);
-    if (task) {
-        task.status = newStatus;
-        localStorage.setItem('interns', JSON.stringify(interns));
-        alert(`Status updated to "${newStatus}"!`); 
+        const currentEmail = localStorage.getItem('currentStudentEmail') || '';   
+        const student = interns.find(i => i.email.toLowerCase() === currentEmail.toLowerCase());
+
+        if (!student || !student.tasks) return;
+        const task = student.tasks.find(t => t.id === taskId);
+        
+        if (task) {
+            task.status = newStatus;
+            localStorage.setItem('interns', JSON.stringify(interns));
+            alert(`Status updated to "${newStatus}"!`); 
+        }
     }
-}
 
     function logout() {
         localStorage.removeItem('isStudent');
