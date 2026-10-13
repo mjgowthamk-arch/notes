@@ -23,7 +23,7 @@
         .wrapper {
             display: flex; 
             width: 95%;  
-            height: 90vh;
+            height: 95vh;
             gap: 25px;
         }
 
@@ -40,7 +40,7 @@
         .admin-dashboard h1 {
             color: darkblue;   
             margin: 0 0 5px 0;
-            font-size: 25px;
+            font-size: 30px;
         }
 
         .admin-dashboard h2 {
@@ -52,7 +52,7 @@
         .admin-dashboard h3 {
             color: darkgreen;
             margin: 0 0 15px 0;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .admin-dashboard label {
@@ -90,14 +90,13 @@
         }
 
         .export-btn {
-            background-color: #059669;
+            background-color: #078960;
             color: white;
             border: none;
             padding: 8px 16px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: bold;
         }
 
         .export-btn:hover {
@@ -133,6 +132,7 @@
 
         table {
             width: 100%;
+            height: 200px;
             border-collapse: collapse;
         }
         
@@ -140,11 +140,11 @@
             padding: 10px 12px;
             text-align: left;
             border: 2px solid black;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         th {
-            background-color: snow;
+            background-color: gainsboro;
         }
 
         .delete-btn {
@@ -181,8 +181,8 @@
                     <label for="internRole">Role:</label>
                     <select id="internRole" name="internRole" required>
                         <option value="">Select Role</option>
-                        <option value="Full Stack Developer">Full Stack Developer</option>
-                        <option value="Android Developer">Android Developer</option>
+                        <option value="Full Stack - Intern">Full Stack - Intern</option>
+                        <option value="Android - Intern">Android - Intern</option>
                     </select>
 
                     <label for="manager">Assign to Manager:</label>
@@ -221,17 +221,6 @@
         function logout() {
             localStorage.removeItem('isAdmin');
             window.location.href = 'login.html';
-        }
-
-        function calculateTaskAvg(intern) {
-            const tasks = intern.tasks || [];
-            const graded = tasks
-                .filter(t => t.score !== '-' && t.score !== '' && !isNaN(Number(t.score)))
-                .map(t => Number(t.score));
-
-            if (graded.length === 0) return '-';
-            const total = graded.reduce((sum, val) => sum + val, 0);
-            return (total / graded.length).toFixed(1) + " / 100";
         }
 
         function addIntern(){
@@ -276,29 +265,44 @@
                 return;
             }
 
-            for (let i = 0; i < interns.length; i++) {
+            interns.forEach(intern => {
+   
                 const row = table.insertRow();
-                row.insertCell(0).textContent = interns[i].name;
-                row.insertCell(1).textContent = interns[i].email;
-                row.insertCell(2).textContent = interns[i].role;
-                row.insertCell(3).textContent = interns[i].manager;
-                row.insertCell(4).textContent = calculateTaskAvg(interns[i]);
-                row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern(${i})">Delete</button>`;   
-            } 
+                row.insertCell(0).textContent = intern.name;
+                row.insertCell(1).textContent = intern.email;
+                row.insertCell(2).textContent = intern.role;
+                row.insertCell(3).textContent = intern.manager;
+                row.insertCell(4).textContent = calculateTaskAvg(intern);
+                row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern('${intern.email}')">Delete</button>`;   
+            });
         }
 
-        function deleteIntern(index){
-            const savedData = localStorage.getItem('interns');
-            const interns = JSON.parse(savedData) || [];
-            const targetName = interns[index] ? interns[index].name : 'this intern';
+        function calculateTaskAvg(intern) {
+            const tasks = intern.tasks || [];
+            const graded = tasks
+                .filter(t => t.score !== '-' && t.score !== '' && !isNaN(Number(t.score)))
+                .map(t => Number(t.score));
 
-            if (!confirm(`Are you sure you want to delete ${targetName}?`)) {
+            if (graded.length === 0) return '-';
+            const total = graded.reduce((sum, val) => sum + val, 0);
+            return (total / graded.length).toFixed(1) + " / 100";
+        }
+
+        function deleteIntern(email) {
+            let interns = JSON.parse(localStorage.getItem('interns')) || [];
+            const target = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+
+            if (!target) {
+                alert("Intern no longer exists!");
+                showIntern(); 
                 return;
             }
 
-            interns.splice(index, 1);
-            localStorage.setItem('interns', JSON.stringify(interns));  
-            showIntern();
+            if (confirm(`Delete ${target.name}?`)) {
+                interns = interns.filter(i => i.email !== email);
+                localStorage.setItem('interns', JSON.stringify(interns));
+                showIntern();
+            }
         }
 
         function exportToCSV() {

@@ -129,7 +129,7 @@
         }
 
         th {
-            background-color: #f1f5f9;
+            background-color: gainsboro;
         }
     </style>
 </head>
@@ -220,7 +220,7 @@
                 const taskCell = row.insertCell(1);
                 taskCell.innerHTML = `
                 <textarea id="task_title_${task.id}" style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;">${task.title}</textarea>
-                <small style="color: #64748b; display: block; margin-top: 4px;">Assigned: ${task.assignedDate || 'N/A'}</small>
+                <small style="color: grey; display: block; margin-top: 5px;">Assigned: ${task.assignedDate || 'N/A'}</small>
                 `;
 
                 const statusCell = row.insertCell(2);
@@ -256,6 +256,7 @@
     }
 
     function assignTask() {
+        
         const email = document.getElementById('selectIntern').value;
         const title = document.getElementById('taskTitle').value.trim();
 
@@ -282,22 +283,23 @@
     }
 
     function saveScoreAndFeedback(email, taskId) {
+
         const val = document.getElementById(`score_${taskId}`).value.trim();
         if (val === '' || isNaN(Number(val)) || Number(val) < 0 || Number(val) > 100) {
             alert("Please enter a score between 0 and 100.");
             return;
         }
 
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
-        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
-
         const feedbackVal = document.getElementById(`fb_${taskId}`).value.trim();
-
-        const titleElem = document.getElementById(`task_title_${taskId}`);
+        const titleElem = document.getElementById(`task_title_${taskId}`);   
         const titleVal = titleElem ? titleElem.value.trim() : '';
 
-        const task = (intern.tasks || []).find(t => t.id === taskId);
+        const savedData = localStorage.getItem('interns');
+        const interns = JSON.parse(savedData) || [];
+
+        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+        const task = (intern && intern.tasks) ? intern.tasks.find(t => t.id === taskId) : null;
+
         if (task) {
             task.title = titleVal;
             task.score = Number(val);
@@ -310,6 +312,7 @@
     }
 
     function updateStatus(email, taskId, newStatus) {
+
         const savedData = localStorage.getItem('interns');
         const interns = JSON.parse(savedData) || [];
         const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
