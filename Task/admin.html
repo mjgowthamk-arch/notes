@@ -282,7 +282,7 @@
                 let score=parseFloat(returnVal);
 
                 if (returnVal!=='-'){
-                    if (score<40){
+                    if (score<50){
                         a.style.color='red';
                     }
                     else if (score>=80){
@@ -292,7 +292,7 @@
                         a.style.color='orange'
                     }
                 } 
-                 
+
                 row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern('${intern.email}')">Delete</button>`;   
             });
         }
