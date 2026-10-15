@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
+
+    <link rel="stylesheet" href="toast.css">
+    <script src="toast.js"></script>
+
     <style>
         * {
             font-family: Arial, Helvetica, sans-serif;
@@ -25,6 +29,14 @@
             width: 95%;
             height: 90vh;
             gap: 25px;
+        }
+
+        .container {
+            height: 100%;
+            padding: 30px; 
+            background-color: #f8fafc; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 5px;
         }
 
         .intern-profile {
@@ -51,7 +63,7 @@
 
         .info-card {
             background-color: white;
-            border: 1px solid grey;
+            border: 2px solid #e2e8f0;
             border-radius: 6px;
             padding: 15px;
             margin-bottom: 12px;
@@ -70,12 +82,20 @@
             color: darkgreen;
         }
 
-        .logout-link {
-            color: red;
-            text-decoration: none;
+        .logout-btn {
+            align-self: flex-start;
+            background: red;
+            color: white;
             font-weight: bold;
-            display: inline-block;
-            margin-top: 15px;
+            margin-top: 20px;
+            border: none;
+            padding:5px 8px; 
+            border-radius:3px;
+            cursor:pointer;
+        }
+
+        .logout-btn:hover {
+            background: #c74040;        
         }
 
         .intern-task {
@@ -113,12 +133,13 @@
         th {
             background-color: gainsboro;
         }
+
     </style>
 </head>
 <body>
     <div class="wrapper">
         <div class="intern-profile">
-            <div>
+            <div class="container">
                 <h1>Student Dashboard</h1>
                 <h2 id="welcomeText">Welcome!</h2>
 
@@ -138,7 +159,7 @@
                 </div>
             </div>
 
-            <a href="#" class="logout-link" onclick="logout();">Logout</a>
+            <button type="button" class="logout-btn" onclick="logout();">Logout</button>
         </div>
 
         <div class="intern-task">
@@ -256,7 +277,7 @@
         if (task) {
             task.status = newStatus;
             localStorage.setItem('interns', JSON.stringify(interns));
-            alert(`Status updated to "${newStatus}"!`); 
+            showToast(`Status updated to "${newStatus}"!`, 'success'); 
         }
     }
 

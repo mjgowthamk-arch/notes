@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Dashboard</title> 
+    <title>Manager Dashboard</title>
+    
+    <link rel="stylesheet" href="toast.css">
+    <script src="toast.js"></script>
+    
     <style>
         * {
             box-sizing: border-box;
@@ -45,13 +49,13 @@
 
         .manager-form-panel h2 {
             color: darkblue;
-            margin: 0 0 20px 0;
+            margin: 0 0 10px 0;
             font-size: 20px;
         }
 
         .manager-form-panel h3 {
             color: darkgreen;
-            margin: 0 0 15px 0;
+            margin: 0 0 10px 0;
             font-size: 18px;
         }
 
@@ -66,10 +70,17 @@
         .manager-form-panel select {
             width: 100%;
             padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 12px;
+            margin: 6px 0 6px 0;
             border-radius: 5px;
-            border: 1px solid #ccc;
+            border: 2px solid #e2e8f0;
+        }
+
+        .form-container {
+            height: 100%;
+            padding: 30px; 
+            background-color: #f8fafc; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 5px;
         }
 
         .add-btn {
@@ -89,12 +100,20 @@
             background-color: #0056b3;
         }
 
-        .logout-link {
-            color: red;
-            text-decoration: none;
+        .logout-btn {
+            align-self: flex-start;
+            background: red;
+            color: white;
             font-weight: bold;
-            margin-top: 15px;
-            display: inline-block;
+            margin-top: 20px;
+            border: none;
+            padding:5px 8px; 
+            border-radius:3px;
+            cursor:pointer;
+        }
+
+        .logout-btn:hover {
+            background: #c74040;        
         }
 
         .manager-table-panel {
@@ -131,14 +150,20 @@
         th {
             background-color: gainsboro;
         }
+        
     </style>
 </head>
 <body>
     <div class="wrapper">
         <div class="manager-form-panel"> 
-            <div>
+            <div class="form-container">
                 <h1>Manager Dashboard</h1>
                 <h2 id="welcomeText">Welcome, Manager!</h2>
+
+                <div style="background-color: white; border: 2px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 10px;">
+                    <span style="font-size: 14px; font-weight: bold; color: #49586c;">Assigned Interns:</span>
+                    <span id="assignedCount" style="font-size: 14px; font-weight: bold; color: #1e3a8a; margin-left: 6px;">0</span>
+                </div>
 
                 <h3>Assign Task</h3>
                 <form id="taskForm" onsubmit="event.preventDefault(); assignTask();">
@@ -147,14 +172,14 @@
                     <select id="selectIntern" required></select>
     
                     <label for="taskTitle">Task Assigned:</label>
-                    <textarea id="taskTitle" placeholder="e.g., Intern Management System" style="width: 400px; height: 200px; padding: 5px; margin-top:10px;" required></textarea>
+                    <textarea id="taskTitle" placeholder="e.g., Intern Management System" style="width: 400px; height: 180px; padding: 5px; margin-top:10px;" required></textarea>
 
                     <button type="submit" class="add-btn">Assign Task</button>
 
                 </form>
             </div>
-
-            <a href="#" onclick="logout();" class="logout-link">Logout</a>
+            
+            <button type="button" class="logout-btn" onclick="logout();">Logout</button>
         </div>
 
         <div class="manager-table-panel">
@@ -190,7 +215,9 @@
         select.innerHTML = '<option value="">-- Select Intern --</option>';
 
         const assignedInterns = interns.filter(i => i.manager === myManagerName);
-
+        
+        document.getElementById('assignedCount').textContent = assignedInterns.length;
+        
         assignedInterns.forEach(intern => {
             const opt = document.createElement('option');
             opt.value = intern.email;
@@ -291,7 +318,7 @@
 
         const val = document.getElementById(`score_${taskId}`).value.trim();
         if (val === '' || isNaN(Number(val)) || Number(val) < 0 || Number(val) > 100) {
-            alert("Please enter a score between 0 and 100.");
+            showToast("Please enter a score between 0 and 100.", "error");
             return;
         }
 
@@ -311,7 +338,7 @@
             task.feedback = feedbackVal;
 
             localStorage.setItem('interns', JSON.stringify(interns));
-            alert(`Score saved: ${val} points.`);
+            showToast(`Score saved: ${val} points.`, 'success');
             loadData();
         }
     }
@@ -326,7 +353,7 @@
         if (task) {
             task.status = newStatus;
             localStorage.setItem('interns', JSON.stringify(interns));
-            alert(`Status updated to ${newStatus}.`);
+            showToast(`Status updated to ${newStatus}.`, 'success');
         }
     }
 

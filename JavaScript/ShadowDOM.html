@@ -89,10 +89,140 @@
   // 4. Inside the loop, clone the template's content
   // 5. Set the textContent of the cloned <li> to the current fruit  
   // 6. Append the clone to the 'listContainer'
-</script>
 
 // ----------------------------------------
 
+// Regular expressions
+
+let str0 = '<h1>Hello, world!</h1>';
+let tag = str0.match(/<(.*?)>/);
+alert( tag ); // <h1>
+
+
+
+let dateRegexp = /(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})/g;
+let str = "2019-10-30 2020-01-01";
+let results = str.matchAll(dateRegexp);
+
+for(let result of results) {
+  let {year, month, day} = result.groups;
+  alert(`${day}.${month}.${year}`);
+  // first alert: 30.10.2019
+  // second: 01.01.2020
+}
+
+
+
+let regexp = /(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})/g;
+let str1 = "2019-10-30, 2020-01-01";
+alert( str1.replace(regexp, '$<day>.$<month>.$<year>') );
+// 30.10.2019, 01.01.2020
+
+
+
+let regexp1 = /html|php|css|java(script)?/gi;
+let str2 = "First HTML appeared, then CSS, then JavaScript";
+alert( str2.match(regexp1) ); // 'HTML', 'CSS', 'JavaScript'
+
+
+let regexp2 = /JavaScript|java|PHP|C\+\+|c/gi;
+alert("Java JavaScript PHP C++ C".match(regexp2)); // Java JavaScript PHP C++ C
+
+
+let str3 = "1 turkey costs 30€";
+alert( str3.match(/\d+(?=€)/) ); // 30
+
+
+let str4 = "2 turkeys cost 60€";
+alert( str4.match(/\d+\b(?!€)/g) ); // 2 
+
+
+let str5 = "1 turkey costs $30";
+// the dollar sign is escaped \$
+alert( str5.match(/(?<=\$)\d+/) ); // 30
+
+
+let str6 = "2 turkeys cost $60";
+alert( str6.match(/(?<!\$)\b\d+/g) ); // 2
+
+
+let regexp3 = /^(\w+\s?)*$/;
+alert( regexp3.test("A good string") ); // true
+alert( regexp3.test("Bad characters:") ); // false
+
+// Catastrophic backtracking
+let regexp4 = /^(\d+)*$/; // never nest quantifiers , prefer: /^\d+$/
+let str7 = "0123333333333333333333333333333333z";
+// will take a very long time (careful!)
+alert( regexp4.test(str7) );
+
+
+let str8 = 'let varName'; // Let's find all words in this string
+let regexp5 = /\w+/g;
+
+alert(regexp5.lastIndex); // 0 (initially lastIndex=0)
+
+let word1 = regexp5.exec(str8);
+alert(word1[0]); // let (1st word)
+alert(regexp5.lastIndex); // 3 (position after the match)
+
+let word2 = regexp5.exec(str8);
+alert(word2[0]); // varName (2nd word)
+alert(regexp5.lastIndex); // 11 (position after the match)
+
+let word3 = regexp5.exec(str8);
+alert(word3); // null (no more matches)
+alert(regexp5.lastIndex); // 0 (resets at search end)
+
+
+
+let str9 = "I love JavaScript";
+let result = str9.match(/Java(Script)/);
+
+alert( result[0] );     // JavaScript (full match)
+alert( result[1] );     // Script (first capturing group)
+alert( result.length ); // 2
+
+// Additional information:
+alert( result.index );  // 7 (match position)
+alert( result.input );  // I love JavaScript (source string)
+
+
+let str10 = "I love JavaScript";
+let result1 = str10.match(/Java(Script)/g);
+
+alert( result1[0] ); // JavaScript
+alert( result1.length ); // 1
+
+
+
+let str11 = "I love JavaScript";
+let result2 = str.match(/HTML/);
+
+alert(result2); // null
+alert(result2.length); // Error: Cannot read property 'length' of null
+
+
+alert('12, 34, 56'.split(/,\s*/)) // array of ['12', '34', '56']
+
+
+let str12 = "A drop of ink may make a million think";
+alert( str12.search( /ink/i ) ); // 10 (first match position)
+
+// replace all dashes by a colon
+alert('12-34-56'.replaceAll("-", ":")) // 12:34:56
+
+// replace all dashes by a colon
+alert( '12-34-56'.replace( /-/g, ":" ) )  // 12:34:56
+
+
+let str13 = "I love JavaScript";
+alert( /love/i.test(str13) ); // true
+
+let str14 = "Bla-bla-bla";
+alert( /love/i.test(str14) ); // false
+
+</script>
   
 </body>
 </html>

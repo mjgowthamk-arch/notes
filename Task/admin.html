@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    
+    <link rel="stylesheet" href="toast.css">
+    <script src="toast.js"></script>
+    
     <style>
         * {
             box-sizing: border-box;
@@ -52,7 +56,7 @@
         .admin-dashboard h3 {
             color: darkgreen;
             margin: 0 0 15px 0;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .admin-dashboard label {
@@ -70,6 +74,14 @@
             margin-bottom: 12px;
             border-radius: 5px;
             border: 1px solid #ccc;
+        }
+
+        .form-container {
+            height: 100%;
+            padding: 30px; 
+            background-color: #f8fafc; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 5px;
         }
 
         .add-btn {
@@ -103,14 +115,22 @@
             background-color: #047857;
         }
 
-        .logout-link {
-            color: red;
-            text-decoration: none;
+        .logout-btn {
+            align-self: flex-start;
+            background: red;
+            color: white;
             font-weight: bold;
-            margin-top: 15px;
-            display: inline-block;
+            margin-top: 20px;
+            border: none;
+            padding:5px 8px; 
+            border-radius:3px;
+            cursor:pointer;
         }
 
+        .logout-btn:hover {
+            background: #c74040;        
+        }
+        
         .intern-list {
             flex: 2;
             padding: 30px;
@@ -132,7 +152,6 @@
 
         table {
             width: 100%;
-            height: 200px;
             border-collapse: collapse;
         }
         
@@ -165,10 +184,10 @@
 <body>
     <div class="wrapper">
         <div class="admin-dashboard">
-            <div>
+            <div class="form-container">
                 <h1>Admin Dashboard</h1>
                 <h2>Welcome, HR Admin!</h2>
-
+                
                 <h3>Add New Intern</h3>
 
                 <form id="addIntern" onsubmit="event.preventDefault(); addIntern();">
@@ -196,7 +215,7 @@
                 </form>
             </div>
             
-            <a href="#" onclick="logout();" class="logout-link">Logout</a>
+            <button type="button" class="logout-btn" onclick="logout();">Logout</button>
         </div>
 
         <div class="intern-list">
@@ -204,6 +223,31 @@
                 <h1>Intern List</h1>
                 <button type="button" class="export-btn" onclick="exportToCSV();">Export CSV</button>
             </div>
+
+
+            <div class="ov-box">
+                <div class="interns-info">
+                    <span class="box">Total Interns:</span>
+                    <span class="box-value" id="totalInternsVal">0</span>
+                </div>
+
+                <div class="interns-info">
+                    <span class="box">Total Task Assigned:</span>
+                    <span class="box-value" id="totalTasksVal">0</span>                
+                </div>
+
+                <div class="interns-info">
+                    <span class="box">Overall Average Score:</span>
+                    <span class="box-value" id="overallAvgVal">-</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="adminSearch" placeholder="Search interns by name, email, or role..." 
+                onkeyup="filterAdminTable();" style="width: 100%; padding: 9px 14px; 
+                border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+            </div>            
+     
             <div class="table-container">
                 <table id="intern-table">
 
@@ -233,7 +277,7 @@
             const interns = JSON.parse(savedData) || [];
 
             if (interns.some(i => i.email.toLowerCase() === email.toLowerCase())) {
-                alert("An intern with this email already exists!");
+                showToast("An intern with this email already exists!", 'error');
                 return;
             }
 
@@ -244,8 +288,9 @@
 
             document.getElementById('addIntern').reset();
             showIntern();
-            alert(`Intern ${name} added successfully!`);
+            showToast(`Intern ${name} added successfully!`, 'success');
         }
+
 
         function showIntern(){
             const savedData = localStorage.getItem('interns');
@@ -295,6 +340,34 @@
 
                 row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern('${intern.email}')">Delete</button>`;   
             });
+
+            let totalTaskCount=0;
+            let allGradedScores=[];
+
+            interns.forEach(intern =>{
+                (intern.tasks || []).forEach(task =>{
+                    totalTaskCount++;
+                    
+                    if (typeof task.score === 'number'){
+                        allGradedScores.push(task.score);
+                    }
+                });
+            });
+
+            document.getElementById('totalInternsVal').textContent = interns.length;
+            document.getElementById('totalTasksVal').textContent = totalTaskCount;
+
+            let length = allGradedScores.length
+
+            if (length>0){
+                let sum=allGradedScores.reduce((sum,curr)=>sum+curr,0);
+                let avg=(sum/length).toFixed(1);
+
+                document.getElementById('overallAvgVal').textContent=`${avg} / 100`; 
+            } 
+            else { 
+                document.getElementById('overallAvgVal').textContent='-'; 
+            }
         }
 
         function calculateTaskAvg(intern) {
@@ -313,7 +386,7 @@
             const target = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
 
             if (!target) {
-                alert("Intern no longer exists!");
+                showToast("Intern no longer exists!", 'error');
                 showIntern(); 
                 return;
             }
@@ -324,13 +397,30 @@
                 showIntern();
             }
         }
+ 
+        function filterAdminTable() {
+
+            const query = document.getElementById('adminSearch').value.toLowerCase();
+            const table = document.getElementById('intern-table');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const rowText = rows[i].textContent.toLowerCase();
+                if (rowText.includes(query)) {
+                    rows[i].style.display = "";
+                } 
+                else {
+                    rows[i].style.display = "none";
+                }
+            }    
+        }
 
         function exportToCSV() {
             const savedData = localStorage.getItem('interns');
             const interns = JSON.parse(savedData) || [];
 
             if (interns.length === 0) {
-                alert("No data to export!");
+                showToast("No data to export!", 'error');
                 return;
             }
 
