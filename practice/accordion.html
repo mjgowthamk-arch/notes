@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accordion</title>
+  <style>
+    body {
+        font-family: sans-serif; 
+        max-width: 400px; 
+        margin: 40px auto; 
+    }
+    
+    .accordion-btn {
+      width: 100%;
+      text-align: left;
+      padding: 15px;
+      background: #eee;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      border-bottom: 1px solid #ccc;
+    }
+    
+    .accordion-content {
+      padding: 0 15px;
+      background: #fff;
+      max-height: 0;
+      overflow: hidden; 
+      transition: all 0.3s ease; 
+    }
+
+    .open {
+      max-height: 200px; 
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <button class="accordion-btn">What is HTML?</button>
+    <div class="accordion-content">HTML stands for HyperText Markup Language. It structures the web page.</div>
+  </div>
+
+  <div>
+    <button class="accordion-btn">What is CSS?</button>
+    <div class="accordion-content">CSS stands for Cascading Style Sheets. It styles the web page.</div>
+  </div>
+
+  <script>
+    const btns = document.querySelectorAll('.accordion-btn');
+
+    btns.forEach(btn => {
+      btn.addEventListener('click', function() {
+      
+        const content = this.nextElementSibling;
+        content.classList.toggle('open');
+      });
+    });
+  </script>
+</body>
+</html>

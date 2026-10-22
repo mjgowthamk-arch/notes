@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Character Count</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #fff;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 400px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      font-family: inherit;
+      resize: vertical; 
+      box-sizing: border-box; 
+    }
+
+    .counter-text {
+      font-size: 14px;
+      color: #666;
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    .limit-reached {
+      color: #dc3545;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <textarea id="messageBox" placeholder="Type your message here..."></textarea>
+    <div id="charCount" class="counter-text">0/50 characters</div>
+  </div>
+
+  <script>
+    const textArea = document.getElementById('messageBox');
+    const charCount = document.getElementById('charCount');
+    const limit = 50;
+
+    textArea.addEventListener('input', function() {
+      
+      const currentLength = textArea.value.length;
+      
+      charCount.textContent = `${currentLength}/${limit} characters`;
+
+      if (currentLength > limit) {
+        charCount.classList.add('limit-reached');
+      } else {
+        charCount.classList.remove('limit-reached');
+      }
+      
+    });
+  </script>
+
+</body>
+</html>

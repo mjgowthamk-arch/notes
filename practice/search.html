@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Search Filter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      padding-top: 50px;
+    }
+    
+    .search-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      color: #333;
+    }
+    
+    li:last-child {
+      border-bottom: none;
+    }
+
+    .no-results {
+      color: #999;
+      text-align: center;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search cities...">
+    <ul id="cityList"></ul>
+  </div>
+
+  <script>
+    const cities = [
+      'Bengaluru', 'Chennai', 'Pune', 'Hyderabad', 
+      'Mumbai', 'Delhi'
+    ];
+
+    const searchInput = document.getElementById('searchInput');
+    const cityList = document.getElementById('cityList');
+
+    function renderList(listData) {
+      cityList.innerHTML = '';
+      
+      if (listData.length === 0) {
+        cityList.innerHTML = '<li class="no-results">No matches found</li>';
+        return;
+      }
+
+      listData.forEach(function(city) {
+        const li = document.createElement('li');
+        li.textContent = city;
+        cityList.append(li);
+      });
+    }
+
+    renderList(cities);
+
+    searchInput.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      
+      const filteredCities = cities.filter(function(city) {
+        return city.toLowerCase().includes(searchTerm);
+      });
+
+      renderList(filteredCities);
+    });
+  </script>
+
+</body>
+</html>

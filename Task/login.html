@@ -94,6 +94,7 @@
 
     .login-btn:hover {
         background-color: #0056b3;
+        transition: all 0.5s ease;
     }    
     </style>
 </head>
@@ -133,41 +134,85 @@
     </div>
     
     <script>
-        function login(){
-            const user=document.getElementById('username').value;
-            const password=document.getElementById('password').value;  
-            const role=document.getElementById('role').value;
-  
-            if (user.toLowerCase()==='admin' && password==='123' && role==='admin'){
-                localStorage.setItem('isAdmin', 'true');
-                window.location.href='admin.html';      
+    // 1. Create a function named 'login'
+    function login() {
+
+        const username=document.getElementById('username').value;
+
+        // 2. Grab the text from the 'username' input box and store it in 'user'
+
+        const password=document.getElementById('password').value;
+
+        // 3. Grab the text from the 'password' input box and store it in 'password'
+
+        const role=document.getElementById('role').value;
+
+        // 4. Grab the selected option from the 'role' dropdown and store it in 'role'
+
+        if (username.toLowerCase() == 'admin' && password == '123' && role == 'admin'){
+            localStorage.setItem('isAdmin', 'true');
+            window.location.href='admin.html';
+        }
+
+        // 5. Check if user is 'admin' (case-insensitive), password is '123', and role is 'admin'
+    
+        // 6. Save 'isAdmin' as 'true' in localStorage
+                
+        // 7. Redirect the browser to 'admin.html'
+
+        else if(username== 'manager'&& password == '123' && (role=='Manager 1' || role=='Manager 2')){
+            localStorage.setItem('currentManager', role);
+            window.location.href='manager.html';
+        }
+
+        // 8. Otherwise, check if user is 'manager', password is '123', and role is EITHER 'Manager 1' OR 'Manager 2'
+
+        // 9. Save the selected role as 'currentManager' in localStorage
+        
+        // 10. Redirect the browser to 'manager.html'
+
+        else if (password=='123' && role=='Intern'){
+            const data = JSON.parse(localStorage.getItem('interns')) || [];
+            const user=data.find(i=> i.email.toLowerCase()===username.toLowerCase());
+
+            if (user){
+                localStorage.setItem('isStudent', 'true');
+                localStorage.setItem('currentStudentEmail', user.email);
+           
+                window.location.href='intern.html'
             }
-
-            else if(user.toLowerCase()==='manager' && password==='123' && (role==='Manager 1' || role==='Manager 2')){
-                localStorage.setItem('currentManager', role);
-                window.location.href='manager.html'; 
-            }
-
-            else if (password === '123' && role === 'Intern') {
-
-                const interns = JSON.parse(localStorage.getItem('interns')) || [];            
-                const matchedIntern = interns.find(i => i.email.toLowerCase() === user.toLowerCase());
-
-                if (matchedIntern) {
-                    localStorage.setItem('isStudent', 'true');
-                    localStorage.setItem('currentStudentEmail', matchedIntern.email);   
-                    window.location.href = 'intern.html';
-                } 
-               
-                else {
-                    alert('No intern found with this email address. Please check and try again.');
-                }
-            }   
 
             else {
-                  alert('Invalid. Please try again')
-            }
+                alert('No intern found with this email address. Please check and try again.');
+            }       
         }
+
+        else {
+            alert('Invalid. Please try again');
+        }
+
+        // 11. Otherwise, check if password is '123' and role is 'Intern'
+    
+        // 12. Read and parse the 'interns' array from localStorage (or fallback to empty array [])
+        
+        // 13. Search the interns array to find one whose email matches the username (case-insensitive)
+        
+        // 14. If a matching intern was found:
+        
+        // 15. Save 'isStudent' as 'true' in localStorage
+            
+        // 16. Save the intern's email as 'currentStudentEmail' in localStorage
+            
+        // 17. Redirect the browser to 'intern.html'
+            
+        // 18. If no matching intern was found:
+        
+        // 19. Show an alert: 'No intern found with this email address. Please check and try again.'
+            
+        // 20. If none of the roles or credentials matched:
+    
+        // 21. Show an alert: 'Invalid. Please try again'   
+    }
     </script>
 </body>
 </html>

@@ -95,7 +95,9 @@
         }
 
         .logout-btn:hover {
-            background: #c74040;        
+            background: #772020;      
+            transition: all 0.5s ease;
+
         }
 
         .intern-task {
@@ -289,6 +291,171 @@
 
     window.onload = loadStudentData;
 </script>
+
+// =========================================================================
+// 1. ROUTE GUARD
+// =========================================================================
+
+// 1. Read 'isStudent' from localStorage
+
+
+// 2. If 'isStudent' is missing, alert 'Access Denied! Please log in first.' and redirect to 'login.html'
+
+
+
+
+// =========================================================================
+// 2. LOAD STUDENT DATA FUNCTION (PROFILE, AVERAGE & TASK TABLE)
+// =========================================================================
+
+// 3. Create function named 'loadStudentData'
+function loadStudentData() {
+
+    // 4. Get and parse 'interns' array from localStorage (fallback to empty array [])
+
+
+    // 5. Read 'currentStudentEmail' from localStorage (fallback to '')
+
+
+    // 6. Find the student matching 'currentEmail' (case-insensitive)
+
+
+    // 7. If student record not found, alert 'Student record not found!', call logout(), and return
+
+
+
+
+    // 8. Set 'welcomeText' to "Welcome, " + student.name + "!"
+
+
+    // 9. Set 'roleValue' textContent to student.role
+
+
+    // 10. Set 'managerValue' textContent to student.manager
+
+
+    // 11. Extract student.tasks array (fallback to empty array [])
+
+
+    // 12. Filter tasks with graded numeric scores (not '-', not '', and isNaN check), mapping them to numbers
+
+
+
+
+    // 13. If there is at least one graded score:
+
+
+        // 14. Sum scores using reduce(), compute average to 1 decimal place, and set 'avgRating' textContent with total count
+        
+
+
+    // 15. Otherwise (no graded scores): set 'avgRating' textContent to '-'
+    
+
+
+
+    // 16. Grab the table element with ID 'performance-table'
+
+
+    // 17. Set table.innerHTML with 4 headers: Task Assigned, Status, Score, Feedback
+
+
+
+
+    // 18. If tasks array has 0 items, insert a centered row spanning all 4 columns saying "No tasks assigned yet.", and return
+
+
+
+
+    // 19. Loop through each task to build table rows:
+
+
+        // 20. Insert a new row (table.insertRow())
+
+
+        // 21. Cell 0: set textContent to task.title
+
+
+        // 22. Cell 1: set innerHTML to a status dropdown calling updateTaskStatus with task.id and this.value, pre-selecting the current status using ternary checks
+
+
+
+
+        // 23. Cell 2: set textContent to task.score + " / 100" (or '-' if ungraded)
+
+
+
+
+        // 24. If score is >= 80, color green; if < 50, color red; otherwise if between 50 and 79, color orange
+
+
+
+
+
+
+
+
+        // 25. Cell 3: set textContent to task.feedback (or '-' if empty)
+        
+
+}
+
+
+// =========================================================================
+// 3. UPDATE TASK STATUS FUNCTION
+// =========================================================================
+
+// 26. Create function 'updateTaskStatus' taking 'taskId' and 'newStatus'
+function updateTaskStatus(taskId, newStatus) {
+
+    // 27. Get and parse 'interns' array from localStorage
+
+
+    // 28. Read 'currentStudentEmail' from localStorage (fallback to '')
+
+
+    // 29. Find the student matching 'currentEmail' (case-insensitive)
+
+
+    // 30. If student or student.tasks is missing, return early
+
+
+    // 31. Find the task matching 'taskId' inside student.tasks
+
+
+    // 32. If task exists:
+
+
+        // 33. Set task.status = newStatus
+
+
+        // 34. Save updated interns array to localStorage as a JSON string
+
+
+        // 35. Show success toast: `Status updated to "${newStatus}"!`
+        
+
+}
+
+
+// =========================================================================
+// 4. LOGOUT & INITIAL LOAD
+// =========================================================================
+
+// 36. Create function named 'logout'
+function logout() {
+
+    // 37. Remove 'isStudent' from localStorage
+
+
+    // 38. Remove 'currentStudentEmail' from localStorage
+
+
+    // 39. Redirect to 'login.html'
+
+}
+
+// 40. Run loadStudentData when the window loads
 
 </body>
 </html>

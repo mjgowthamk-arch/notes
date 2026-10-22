@@ -11,6 +11,7 @@
     <style>
         * {
             box-sizing: border-box;
+            
         }
 
         body {
@@ -99,6 +100,8 @@
 
         .add-btn:hover {
             background-color: #0056b3;
+            transition: all 0.5s ease;
+
         }
 
         .export-btn {
@@ -128,7 +131,9 @@
         }
 
         .logout-btn:hover {
-            background: #c74040;        
+            background: #c74040;   
+            transition: all 0.5s ease;
+
         }
         
         .intern-list {
@@ -178,6 +183,8 @@
 
         .delete-btn:hover {
             background-color: #b91c1c;
+            transition: all 0.5s ease;
+
         }
     </style>
 </head>
@@ -257,200 +264,380 @@
     </div>
     
     <script>
-        if (localStorage.getItem('isAdmin') !== 'true') {
-            alert("Please log in as Admin first!");        
-            window.location.href = 'login.html';
+    // =========================================================================
+    // 1. ROUTE GUARD & LOGOUT
+    // =========================================================================
+
+    // 1. Check if 'isAdmin' is NOT equal to 'true' in localStorage
+
+    if (localStorage.getItem('isAdmin')!=='true'){
+        alert('Please log in as Admin first!');
+        window.location.href='login.html';
+    }
+    // 2. Alert 'Please log in as Admin first!' and redirect to 'login.html'
+
+    // 3. Define the 'logout' function: remove 'isAdmin' from localStorage and redirect to 'login.html'
+
+    function logout() {
+        localStorage.removeItem('isAdmin');
+        window.location.href='login.html';
+    }
+    // =========================================================================
+    // 2. ADD INTERN FUNCTION
+    // =========================================================================
+
+    // 4. Create function named 'addIntern'
+
+    function addIntern() {
+        const name=document.getElementById('internName').value.trim();
+        const email=document.getElementById('internEmail').value.trim();
+        const role=document.getElementById('internRole').value.trim();
+        const manager=document.getElementById('manager').value.trim();
+        const interns=JSON.parse(localStorage.getItem('interns')) || []; 
+
+        if(interns.some(i=> i.email.toLowerCase()===email.toLowerCase())){
+            showToast("An intern with this email already exists!");
+            return;
         }
 
-        function logout() {
-            localStorage.removeItem('isAdmin');
-            window.location.href = 'login.html';
+        // 5. Read and trim 'internName' input value
+
+        // 6. Read and trim 'internEmail' input value
+
+        // 7. Read selected value from 'internRole' dropdown
+
+        // 8. Read selected value from 'manager' dropdown
+
+        // 9. Get and parse 'interns' array from localStorage (fallback to empty array [])
+
+        // 10. Check if any existing intern already has this email (case-insensitive)
+
+        // 11. If duplicate exists: show error toast "An intern with this email already exists!" and stop (return)  
+    
+        const joinDate=new Date().toLocaleDateString('en-GB');
+    
+        // 12. Create today's date formatted as 'en-GB' (DD/MM/YYYY) into 'joinDate'
+
+        interns.push({
+            name, email, role, joinDate, manager, tasks: [] 
+        })
+        localStorage.setItem('interns', JSON.stringify(interns));
+        showToast(`Intern ${name} added successfully!`, 'success')
+        const form=document.getElementById('addIntern');
+
+        form.reset();
+        showIntern();
+
+        // 13. Push new intern object { name, email, role, joinDate, manager, tasks: [] } into interns array
+
+        // 14. Save updated array back into localStorage as a JSON string
+
+        // 15. Reset the form with ID 'addIntern'
+
+        // 16. Refresh the table by calling showIntern()
+
+        // 17. Show success toast: `Intern ${name} added successfully!`
+
+    }
+    // =========================================================================
+    // 3. RENDER TABLE & SUMMARY CARDS
+    // =========================================================================
+
+    // 18. Create function named 'showIntern'
+    function showIntern() {
+
+        const interns=JSON.parse(localStorage.getItem('interns'))||[];
+        const table=document.getElementById('intern-table');
+     
+        table.innerHTML=`
+
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Manager</th>
+        <th>Average Task Score</th>
+        <th>Action</th>
+        `;
+
+        if(interns.length===0){
+            table.innerHTML=`<td colspan=6> No interns yet.</td>`;
+            return;
         }
 
-        function addIntern(){
-            const name = document.getElementById('internName').value.trim();
-            const email = document.getElementById('internEmail').value.trim();
-            const role = document.getElementById('internRole').value;
-            const manager = document.getElementById('manager').value;
+        // 19. Get and parse 'interns' array from localStorage (fallback to [])
 
-            const savedData = localStorage.getItem('interns');
-            const interns = JSON.parse(savedData) || [];
+        // 20. Grab the table element with ID 'intern-table'
 
-            if (interns.some(i => i.email.toLowerCase() === email.toLowerCase())) {
-                showToast("An intern with this email already exists!", 'error');
-                return;
-            }
+        // 21. Set table.innerHTML with 6 headers: Name, Email, Role, Manager, Average Task Score, Action
 
-            const joinDate=new Date().toLocaleDateString('en-GB');
+        // 22. If interns array is empty, insert a row with a centered message spanning all 6 columns, and return
 
-            interns.push({ name, email, role, joinDate, manager, tasks: [] });
-            localStorage.setItem('interns', JSON.stringify(interns));
+        interns.forEach(intern => {
 
-            document.getElementById('addIntern').reset();
-            showIntern();
-            showToast(`Intern ${name} added successfully!`, 'success');
-        }
+            const row=table.insertRow();
+            row.insertCell(0).textContent=intern.name;
+            row.insertCell(1).textContent=intern.email;
+            row.insertCell(2).textContent=intern.role;
+            row.insertCell(3).textContent=intern.manager;
 
+            const returnVal=calculateTaskAvg(intern);
+            let a=row.insertCell(4)
+            a.textContent=returnVal;
 
-        function showIntern(){
-            const savedData = localStorage.getItem('interns');
-            const interns = JSON.parse(savedData) || [];
-            const table = document.getElementById('intern-table');
+            if (returnVal!=='-'){
+                const val=parseFloat(returnVal);
 
-            table.innerHTML = `
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Manager</th>
-                <th>Average Task Score</th>
-                <th>Action</th>
-            </tr>`;
+                if (val>=80){
+                    a.style.color='green';
+                }
+                else if (val<80 && val>=50){
+                    a.style.color='orange';
+                }
 
-            if (interns.length === 0) {
-                table.insertRow().innerHTML = `<td colspan="6" style="text-align:center; padding: 20px;">No interns registered yet.</td>`;
-                return;
-            }
-
-            interns.forEach(intern => {
-   
-                const row = table.insertRow();
-                row.insertCell(0).textContent = intern.name;
-                row.insertCell(1).textContent = intern.email;
-                row.insertCell(2).textContent = intern.role;
-                row.insertCell(3).textContent = intern.manager;
-
-                const a=row.insertCell(4);
-                const returnVal = calculateTaskAvg(intern);
-                a.textContent=returnVal;
-
-                let score=parseFloat(returnVal);
-
-                if (returnVal!=='-'){
-                    if (score<50){
-                        a.style.color='red';
-                    }
-                    else if (score>=80){
-                        a.style.color='green';
-                    }
-                    else{
-                        a.style.color='orange'
-                    }
-                } 
-
-                row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern('${intern.email}')">Delete</button>`;   
-            });
-
-            let totalTaskCount=0;
-            let allGradedScores=[];
-
-            interns.forEach(intern =>{
-                (intern.tasks || []).forEach(task =>{
-                    totalTaskCount++;
-                    
-                    if (typeof task.score === 'number'){
-                        allGradedScores.push(task.score);
-                    }
-                });
-            });
-
-            document.getElementById('totalInternsVal').textContent = interns.length;
-            document.getElementById('totalTasksVal').textContent = totalTaskCount;
-
-            let length = allGradedScores.length
-
-            if (length>0){
-                let sum=allGradedScores.reduce((sum,curr)=>sum+curr,0);
-                let avg=(sum/length).toFixed(1);
-
-                document.getElementById('overallAvgVal').textContent=`${avg} / 100`; 
-            } 
-            else { 
-                document.getElementById('overallAvgVal').textContent='-'; 
-            }
-        }
-
-        function calculateTaskAvg(intern) {
-            const tasks = intern.tasks || [];
-            const graded = tasks
-                .filter(t => t.score !== '-' && t.score !== '' && !isNaN(Number(t.score)))
-                .map(t => Number(t.score));
-
-            if (graded.length === 0) return '-';
-            const total = graded.reduce((sum, val) => sum + val, 0);
-            return (total / graded.length).toFixed(1) + " / 100";
-        }
-
-        function deleteIntern(email) {
-            let interns = JSON.parse(localStorage.getItem('interns')) || [];
-            const target = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
-
-            if (!target) {
-                showToast("Intern no longer exists!", 'error');
-                showIntern(); 
-                return;
-            }
-
-            if (confirm(`Delete ${target.name}?`)) {
-                interns = interns.filter(i => i.email.toLowerCase() !== email.toLowerCase());
-                localStorage.setItem('interns', JSON.stringify(interns));
-                showIntern();
-            }
-        }
- 
-        function filterAdminTable() {
-
-            const query = document.getElementById('adminSearch').value.toLowerCase();
-            const table = document.getElementById('intern-table');
-            const rows = table.getElementsByTagName('tr');
-
-            for (let i = 1; i < rows.length; i++) {
-                const rowText = rows[i].textContent.toLowerCase();
-                if (rowText.includes(query)) {
-                    rows[i].style.display = "";
-                } 
                 else {
-                    rows[i].style.display = "none";
+                    a.style.color='red';
                 }
-            }    
-        }
-
-        function exportToCSV() {
-            const savedData = localStorage.getItem('interns');
-            const interns = JSON.parse(savedData) || [];
-
-            if (interns.length === 0) {
-                showToast("No data to export!", 'error');
-                return;
             }
+            row.insertCell(5).innerHTML=`<button class='delete-btn' onclick="deleteIntern('${intern.email}');">Delete</button>`
+        });
 
-            let csv = "Intern Name,Email,Role,Manager,Task Assigned,Status,Score,Average Score\n";
+        // 23. Loop through each intern to build table rows:
 
-            interns.forEach(intern => {
-                const avg = calculateTaskAvg(intern);
-                const tasks = intern.tasks || [];
+        // 24. Insert a new row (table.insertRow())
 
-                if (tasks.length === 0) {
-                    csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","No tasks","N/A","N/A","${avg}"\n`;
-                } else {
-                    tasks.forEach(t => {
-                        csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","${t.title.replace(/"/g, '""')}","${t.status}","${t.score}","${avg}"\n`;
-                    });
+        // 25. Cell 0: set textContent to intern.name
+
+        // 26. Cell 1: set textContent to intern.email
+
+        // 27. Cell 2: set textContent to intern.role
+
+        // 28. Cell 3: set textContent to intern.manager
+
+        // 29. Cell 4: calculate average using calculateTaskAvg(intern), and set as textContent
+
+        // 30. Extract the number from that average string using parseFloat()
+
+        // 31. If the average string is NOT equal to '-':
+
+        // 32. Color text red if score < 50, green if >= 80, otherwise orange
+                
+        // 33. Cell 5: set innerHTML to a delete button calling deleteIntern with the intern's email
+
+        // -------------------------------------------------------------
+        // SUMMARY CARDS CALCULATION (Below the table loop)
+        // -------------------------------------------------------------
+
+        let totalTaskCount=0;
+        let allGradedScores=[];
+        interns.forEach(intern=>{
+            (intern.tasks||[]).forEach(task=>{            
+                totalTaskCount++;
+                if (typeof task.score==="number"){
+                    allGradedScores.push(task.score);        
                 }
             });
+        });
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ktt_intern_tasks.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        // 34. Initialize totalTaskCount to 0, and allGradedScores array to []
+
+        // 35. Loop through all interns and their tasks:
+
+        // 36. Increment totalTaskCount for every task
+            
+        // 37. If task.score is a number (typeof === 'number'), push it into allGradedScores
+
+        document.getElementById('totalInternsVal').textContent=interns.length;
+        document.getElementById('totalTasksVal').textContent=totalTaskCount;
+
+        if (allGradedScores.length>=1){
+            const sum=allGradedScores.reduce((sum,i)=> sum+i,0);
+            const avg=(sum/allGradedScores.length).toFixed(1);
+            document.getElementById('overallAvgVal').textContent=`${avg} / 100`;
         }
 
-        window.onload = showIntern;
+        else {
+            document.getElementById('overallAvgVal').textContent='-';
+        }
+        
+        // 38. Update 'totalInternsVal' element with interns.length
+
+        // 39. Update 'totalTasksVal' element with totalTaskCount
+
+        // 40. If allGradedScores has at least one score:
+
+        // 41. Sum all scores using reduce(), calculate average to 1 decimal place, and display as `${avg} / 100` in 'overallAvgVal'
+        
+        // 42. Otherwise (no scores exist): set 'overallAvgVal' textContent to '-'
+
+    }
+    // =========================================================================
+    // 4. CALCULATE TASK AVERAGE FOR ONE INTERN
+    // =========================================================================
+    
+    // 43. Create function 'calculateTaskAvg' taking an 'intern' object
+
+    function calculateTaskAvg(intern) {
+        const tasks=intern.tasks || [];
+        const graded=tasks.filter(task=> task.score !=='-' && typeof task.score=='number').map(task => Number(task.score));
+
+        if (graded.length===0){
+            return '-';
+        }
+
+        const sum=graded.reduce((sum,i)=> sum+i,0);
+        const avg=(sum/graded.length).toFixed(1);
+
+        return `${avg} / 100`;
+
+        // 44. Get tasks array from intern (fallback to [])
+
+        // 45. Filter graded tasks: score is not '-', not empty, and is a valid number; map them to numbers
+
+        // 46. If graded array has 0 items, return '-'
+
+        // 47. Sum all graded scores using reduce()
+
+        // 48. Return calculated average to 1 decimal place + " / 100"
+
+    }
+    // =========================================================================
+    // 5. DELETE INTERN FUNCTION
+    // =========================================================================
+
+    // 49. Create function 'deleteIntern' taking 'email'
+
+    function deleteIntern(email) {
+
+        let interns=JSON.parse(localStorage.getItem('interns')) || [];
+        let toDelete=interns.find(intern=> intern.email.toLowerCase()==email.toLowerCase());
+
+        if(!toDelete){
+            showToast("Intern no longer exists!");
+            showIntern();
+            return;
+        }
+
+        if (confirm(`Delete ${toDelete.name}?`)){
+        
+            interns=interns.filter(intern=> intern.email.toLowerCase()!==email.toLowerCase());
+            localStorage.setItem('interns' , JSON.stringify(interns));
+            showToast(`Intern ${toDelete.name} deleted successfully!`, 'success');
+            showIntern()    
+        }
+
+        // 50. Get and parse 'interns' array from localStorage
+
+        // 51. Find the intern matching this email (case-insensitive)
+
+        // 52. If intern not found: show error toast "Intern no longer exists!", call showIntern(), and return
+
+        // 53. Ask for confirmation: confirm(`Delete ${target.name}?`)
+
+        // 54. If confirmed: filter out the intern whose email matches (case-insensitive)
+
+        // 55. Save updated array to localStorage as JSON string
+
+        // 56. Refresh the table by calling showIntern()        
+    }
+
+    // =========================================================================
+
+    // 6. LIVE TABLE SEARCH (ADMIN)
+
+    // =========================================================================
+
+    // 57. Create function 'filterAdminTable'
+
+    function filterAdminTable() {
+
+        const searchVal=document.getElementById('adminSearch').value.toLowerCase();
+        const table=document.getElementById('intern-table');
+        const row=table.getElementsByTagName('tr');
+
+        for (let i=1;i<row.length; i++){
+         
+            const rowText= row[i].textContent.toLowerCase();
+            if (rowText.includes(searchVal)){
+                row[i].style.display='';
+            }
+            else{
+                row[i].style.display='none';
+            }
+        }
+    }
+    // 58. Read and lowercase the search input value from 'adminSearch'
+
+    // 59. Grab 'intern-table' and all its 'tr' elements
+
+    // 60. Loop through rows starting at index 1 (skipping header at 0):
+    
+    // 61. If row textContent contains the query, display row (""), otherwise hide it ("none")
+        
+    // =========================================================================
+    // 7. EXPORT TO CSV & INITIAL LOAD
+    // =========================================================================
+
+    // 62. Create function 'exportToCSV'
+
+    function exportToCSV() {
+        const interns=JSON.parse(localStorage.getItem('interns'))|| [];
+        if (interns.length===0){
+            showToast("No data to export!",'error');
+            return;
+        }
+
+        let csv= "Intern Name,Email,Role,Manager,Task Assigned,Status,Score,Average Score\n";
+
+        interns.forEach(intern=>{
+            const avg = calculateTaskAvg(intern);
+            const tasks = intern.tasks || [];
+
+            if (tasks.length === 0){
+                csv+=`"${intern.name}", "${intern.email}", "${intern.role}", "${intern.manager}", "No Task", "N/A", "N/A", "${avg}"\n`;
+            }
+            else{
+                tasks.forEach(t => {
+                    csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","${t.title.replace(/"/g, '""')}","${t.status}","${t.score}","${avg}"\n`;
+                });       
+            }
+        });
+
+
+        let blob=new Blob([csv], {type:'text/csv;charset=utf-8;'});
+
+        let url=URL.createObjectURL(blob);
+        let tag=document.createElement('a');
+
+        tag.href=url;
+        tag.download='ktt_intern_tasks.csv';
+
+        document.body.appendChild(tag);
+        tag.click();
+        document.body.removeChild(tag); // tag.remove();
+
+        URL.revokeObjectURL(url);
+    }
+
+    window.onload=showIntern;
+    
+    // 63. Get and parse 'interns' array from localStorage
+
+    // 64. If empty, show error toast "No data to export!" and return
+    
+    // 65. Initialize csv string with header columns: "Intern Name,Email,Role,Manager,Task Assigned,Status,Score,Average Score\n"
+    
+    // 66. Loop through each intern and their tasks:
+
+    // 67. If intern has 0 tasks, add a row with "No tasks","N/A","N/A" and their average
+    
+    // 68. Otherwise, add a row for each task with title (quotes escaped), status, score, and average
+
+    // 69. Create a Blob with the csv string and type 'text/csv;charset=utf-8;'
+
+    // 70. Create temporary URL, create a temporary <a> tag, trigger download with filename 'ktt_intern_tasks.csv', and revoke URL
+
+    // 71. Run showIntern when the window loads
+
     </script>
 </body>
 </html>

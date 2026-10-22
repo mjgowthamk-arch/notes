@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabs UI</title>
+  <style>
+    body { 
+        font-family: sans-serif; 
+        padding: 30px; 
+    }
+    
+    .tab-buttons { 
+        display: flex; 
+        gap: 5px; 
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      cursor: pointer;
+      background: #ddd;
+      border: none;
+      outline: none;
+    }
+    
+    .tab-btn.active {
+      background: #007bff;
+      color: white;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 20px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tab-buttons">
+    <button class="tab-btn active" data-target="#tab1">Profile</button>
+    <button class="tab-btn" data-target="#tab2">Settings</button>
+    <button class="tab-btn" data-target="#tab3">Billing</button>
+  </div>
+
+  <div id="tab1" class="tab-content active"><h3>Profile Info</h3><p>User details go here.</p></div>
+  <div id="tab2" class="tab-content"><h3>Settings</h3><p>Configuration options go here.</p></div>
+  <div id="tab3" class="tab-content"><h3>Billing</h3><p>Payment history goes here.</p></div>
+
+  <script>
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+
+        const targetId = btn.getAttribute('data-target');
+        document.querySelector(targetId).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

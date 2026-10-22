@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modal Popup</title>
+  <style>
+    body { 
+        font-family: sans-serif; 
+        padding: 20px; 
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none; 
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      width: 300px;
+    }
+
+    .show-modal {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="openBtn">Open Modal</button>
+
+  <div id="modalOverlay" class="overlay">
+    <div class="modal">
+      <h2>Important Alert</h2>
+      <p>This requires your immediate attention.</p>
+      <button id="closeBtn">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const openBtn = document.getElementById('openBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const overlay = document.getElementById('modalOverlay');
+
+    openBtn.addEventListener('click', () => {
+      overlay.classList.add('show-modal');
+    });
+
+    closeBtn.addEventListener('click', () => {
+      overlay.classList.remove('show-modal');
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('show-modal');
+      }
+    });
+  </script>
+</body>
+</html>

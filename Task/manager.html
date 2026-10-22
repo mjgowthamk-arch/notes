@@ -98,6 +98,8 @@
 
         .add-btn:hover {
             background-color: #0056b3;
+            transition: all 0.5s ease;
+
         }
 
         .logout-btn {
@@ -113,7 +115,9 @@
         }
 
         .logout-btn:hover {
-            background: #c74040;        
+            background: #813030;  
+            transition: all 0.5s ease;
+
         }
 
         .manager-table-panel {
@@ -200,201 +204,492 @@
 
     <script>
 
-    const myManagerName = localStorage.getItem('currentManager');
-    if (!myManagerName) {
-        alert("Access Denied! Please log in first.");
-        window.location.href = "login.html"; 
-    }
-    document.getElementById('welcomeText').textContent = "Welcome, " + myManagerName + "!";
+// =========================================================================
+// 1. ROUTE GUARD & HEADER PERSONALIZATION
+// =========================================================================
 
-    function loadData() {
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
+// 1. Read 'currentManager' from localStorage
 
-        const select = document.getElementById('selectIntern');
-        select.innerHTML = '<option value="">-- Select Intern --</option>';
+const user=localStorage.getItem('currentManager');
 
-        const assignedInterns = interns.filter(i => i.manager === myManagerName);
-        
-        document.getElementById('assignedCount').textContent = assignedInterns.length;
-        
-        assignedInterns.forEach(intern => {
-            const opt = document.createElement('option');
-            opt.value = intern.email;
-            opt.textContent = `${intern.name} (${intern.role})`;
-            select.appendChild(opt);
-        });
+if (!user){
+    alert('Access Denied! Please log in first.');
+    window.location.href='login.html';
+}
 
-        const table = document.getElementById('intern-table');
-        table.innerHTML = `
-            <tr>
-                <th>Intern</th>
-                <th>Task Assigned</th>
-                <th>Status</th>
-                <th>Score</th>
-                <th>Feedback</th>
-                <th>Action</th>
-            </tr>
+
+// 2. If 'currentManager' is missing, alert 'Access Denied! Please log in first.' and redirect to 'login.html'
+
+document.getElementById('welcomeText').textContent = `Welcome, ${user}!`;
+
+// 3. Set the textContent of 'welcomeText' to "Welcome, " + myManagerName + "!"
+
+
+
+
+// =========================================================================
+// 2. LOAD DATA FUNCTION (POPULATE DROPDOWN & RENDER TABLE)
+// =========================================================================
+
+// 4. Create function named 'loadData'
+function loadData() {
+
+    const interns=JSON.parse(localStorage.getItem('interns')) || [];
+    const select=document.getElementById('selectIntern');
+
+    select.innerHTML="<option value=''>--- Select Intern ---<option>";
+
+    const assignedInterns=interns.filter(i=> i.manager === user);
+    document.getElementById('assignedCount').innerText=assignedInterns.length
+
+
+    // 5. Get and parse 'interns' array from localStorage (fallback to empty array [])
+
+
+    // 6. Grab the 'selectIntern' dropdown element
+
+
+    // 7. Reset the dropdown options with a default 'selectIntern
+
+
+    // 8. Filter 'interns' to keep only those whose 'manager' matches 'myManagerName'
+
+
+    // 9. Update the 'assignedCount' element text to show the number of assigned interns
+
+    assignedInterns.forEach(intern=>{
+        const option=document.createElement('option')
+        option.value=intern.email;
+        option.textContent=`${intern.name} (${intern.role})`;
+        select.appendChild(option);
+    });
+
+    // 10. Loop through each assigned intern to create dropdown options:
+
+
+        // 11. Create a new <option> element
+
+
+        // 12. Set option value to intern.email
+
+
+        // 13. Set option textContent to `${intern.name} (${intern.role})`
+
+
+        // 14. Append option to the 'selectIntern' dropdown
+
+        const table=document.getElementById('intern-table');
+        table.innerHTML=`
+        <th>Intern</th>
+        <th>Task Assigned</th>
+        <th>Status</th>
+        <th>Score</th>
+        <th>Feedback</th>
+        <th>Action</th>
         `;
 
-        let hasTasks = false;
-        assignedInterns.forEach(intern => {
-            (intern.tasks || []).forEach(task => {
-                hasTasks = true;
-                const row = table.insertRow();
-                row.insertCell(0).textContent = intern.name;
+    // 15. Grab the table element with ID 'intern-table'
 
-                const taskCell = row.insertCell(1);
-                taskCell.innerHTML = `
-                <textarea id="task_title_${task.id}" style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;">${task.title}</textarea>
-                <small style="color: grey; display: block; margin-top: 5px;">Assigned: ${task.assignedDate || 'N/A'}</small>
-                `;
 
-                const statusCell = row.insertCell(2);
-                statusCell.innerHTML = `
-                <select onchange="updateStatus('${intern.email}', ${task.id}, this.value)" style="padding: 4px; font-size: 13px;">
-                    <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                    <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                    </select>
-                    `;
+    // 16. Set table.innerHTML with 6 headers: Intern, Task Assigned, Status, Score, Feedback, Action
+
+    let hasTask=false;
+
+    assignedInterns.forEach(intern=> {
+        (intern.tasks || []).forEach(task=>{
+            hasTask=true;
+            const row=table.insertRow();
+
+            row.insertCell(0).textContent=intern.name;
+
+            const taskCell=row.insertCell(1)
+            taskCell.innerHTML= `
+            <textarea id='task_title_${task.id}' style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;">${task.title}</textarea>
+            <small id='assignedDate' style="color: grey; display: block; margin-top: 5px;">Assigned: ${task.assignedDate || 'N/A'}</small>    
+            `;
+
+            const statusCell = row.insertCell(2);    
+            statusCell.innerHTML = `
+        
+            <select onchange="updateStatus('${intern.email}', ${task.id}, this.value)" style="padding: 4px; font-size: 13px;">
+                <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select> `;
                     
-                const scoreCell = row.insertCell(3);
+            const scoreCell = row.insertCell(3);
                 
-                scoreCell.innerHTML = `
-                <input type="number" id="score_${task.id}" min="0" max="100" style="width: 44px; padding: 3px; text-align: center;" placeholder="0" value="${task.score !== '-' ? task.score : ''}">
-                <span style="font-size: 12px; font-weight: bold;">/ 100</span>
-                `;
+            scoreCell.innerHTML = `
+            <input type="number" id="score_${task.id}" min="0" max="100" style="width: 44px; padding: 3px; text-align: center;" placeholder="0" value="${task.score !== '-' ? task.score : ''}">
+            <span style="font-size: 12px; font-weight: bold;">/ 100</span>
+            `;
                 
-                const feedbackCell = row.insertCell(4);
-                
-                feedbackCell.innerHTML = `
-                <textarea id="fb_${task.id}" style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;" placeholder="Add feedback...">${task.feedback ? task.feedback : ''}</textarea>                
-                `;
-        
-                const actionCell = row.insertCell(5);
-        
-                actionCell.innerHTML = `
-                <button style="background:green; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer;" onclick="saveScoreAndFeedback('${intern.email}', ${task.id})">Save</button>
-                <button type="button" style="background:red; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer; margin-top:4px;" onclick="deleteTask('${intern.email}', ${task.id})">Delete</button>
-                `;
-
-            });
+            const feedbackCell = row.insertCell(4);
+            
+            feedbackCell.innerHTML = `
+            <textarea id="fb_${task.id}" style="width: 100%; height: 100px; font-family: Arial, sans-serif; font-size: 13px; padding: 5px; resize: vertical;" placeholder="Add feedback...">${task.feedback ? task.feedback : ''}</textarea>                
+            `;    
+            
+            const actionCell = row.insertCell(5);
+    
+            actionCell.innerHTML = `
+            <button style="background:green; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer;" onclick="saveScoreAndFeedback('${intern.email}', ${task.id})">Save</button>
+            <button type="button" style="background:red; color:white; border:none; padding:5px 8px; border-radius:3px; cursor:pointer; margin-top:4px;" onclick="deleteTask('${intern.email}', ${task.id})">Delete</button>
+            `;
         });
+    });
 
-        if (!hasTasks) {
-            table.insertRow().innerHTML = `<td colspan="6" style="text-align:center; padding: 20px;">No tasks assigned yet.</td>`;
-        }
+    // 17. Create a boolean flag named 'hasTasks' set to false
+
+
+    // 18. Loop through each assigned intern:
+
+
+        // 19. Loop through each task in intern.tasks (fallback to []):
+
+
+            // 20. Flip 'hasTasks' flag to true
+
+
+            // 21. Insert a new row (table.insertRow())
+
+
+            // 22. Cell 0: set textContent to intern.name
+
+
+            // 23. Cell 1: set innerHTML to a textarea with id `task_title_${task.id}` and small text showing assignedDate
+
+
+
+
+            // 24. Cell 2: set innerHTML to a status dropdown calling updateStatus with email, task.id, and this.value, pre-selecting the current status using ternary checks
+
+
+            // 25. Cell 3: set innerHTML to a number input with id `score_${task.id}`, min 0, max 100, and value set to task.score (or empty if '-')
+
+
+            // 26. Cell 4: set innerHTML to a feedback textarea with id `fb_${task.id}` and pre-filled feedback
+
+
+            // 27. Cell 5: set innerHTML to a Save button calling saveScoreAndFeedback and a Delete button calling deleteTask
+            
+
+
+
+    // 28. If 'hasTasks' is still false (no tasks found for any intern):
+
+    if (hasTask==false){
+
+        const row=table.insertRow();
+        row.innerHTML="<td colspan=6>No tasks assigned yet.</td>"
+    }
+     
+    // 29. Insert a row with a centered message spanning all 6 columns: "No tasks assigned yet."
+        
+
+}
+
+
+// =========================================================================
+// 3. ASSIGN TASK FUNCTION
+// =========================================================================
+
+// 30. Create function named 'assignTask'
+function assignTask() {
+
+    const email=document.getElementById('selectIntern').value;
+    const title=document.getElementById('taskTitle').value.trim();
+
+
+
+    // 31. Read the selected intern's email from 'selectIntern'
+
+
+    // 32. Read and trim the task description from 'taskTitle'
+
+
+    // 33. Get and parse 'interns' array from localStorage
+
+    const interns=JSON.parse(localStorage.getItem('interns')) || [];
+    const intern=interns.find(intern=>intern.email.toLowerCase()===email.toLowerCase());
+
+    if (!intern){
+        return;
     }
 
-    function assignTask() {
+    if (!intern.tasks){
+        intern.tasks = [];
+    }
+    
+    // 34. Find the intern matching the selected email (case-insensitive)
 
-        const email = document.getElementById('selectIntern').value;
-        const title = document.getElementById('taskTitle').value.trim();
 
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
-        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+    // 35. If intern not found, return early
 
-        if (!intern) return;
-        if (!intern.tasks) intern.tasks = [];
 
-        const todayDate = new Date().toLocaleDateString('en-GB'); 
+    // 36. If intern.tasks does not exist, initialize it as an empty array []
 
-        intern.tasks.push({
-            id: Date.now(),
-            title: title,
-            assignedDate: todayDate,
-            status: 'Pending',
-            score: '-'
-        });
+    const todayDate=new Date().toLocaleDateString('en-GB'); 
+    intern.tasks.push({
+        id: Date.now(),
+        title: title,
+        assignedDate: todayDate,
+        status: 'Pending',
+        score: '-'    
+    });
 
         localStorage.setItem('interns', JSON.stringify(interns));
         document.getElementById('taskForm').reset();
         loadData();
     }
+    
 
-    function saveScoreAndFeedback(email, taskId) {
 
-        const val = document.getElementById(`score_${taskId}`).value.trim();
-        if (val === '' || isNaN(Number(val)) || Number(val) < 0 || Number(val) > 100) {
-            showToast("Please enter a score between 0 and 100.", "error");
-            return;
-        }
 
-        const feedbackVal = document.getElementById(`fb_${taskId}`).value.trim();
-        const titleElem = document.getElementById(`task_title_${taskId}`);   
-        const titleVal = titleElem ? titleElem.value.trim() : '';
+    // 37. Get today's date formatted as 'en-GB' (DD/MM/YYYY)
 
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
 
-        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
-        const task = (intern && intern.tasks) ? intern.tasks.find(t => t.id === taskId) : null;
+    // 38. Push new task object into intern.tasks with: id (Date.now()), title, assignedDate, status ('Pending'), and score ('-')
 
-        if (task) {
-            task.title = titleVal;
-            task.score = Number(val);
-            task.feedback = feedbackVal;
 
-            localStorage.setItem('interns', JSON.stringify(interns));
-            showToast(`Score saved: ${val} points.`, 'success');
-            loadData();
-        }
+    // 39. Save updated interns array to localStorage as a JSON string
+
+
+    // 40. Reset the form with ID 'taskForm'
+
+
+    // 41. Re-render the table by calling loadData()
+
+
+
+
+// =========================================================================
+// 4. SAVE SCORE AND FEEDBACK FUNCTION
+// =========================================================================
+
+// 42. Create function 'saveScoreAndFeedback' taking 'email' and 'taskId'
+function saveScoreAndFeedback(email, taskId) {
+
+    const score=document.getElementById(`score_${taskId}`).value.trim();
+
+if (score === '' || isNaN(Number(score)) || Number(score) < 0 || Number(score) > 100){
+        showToast("Please enter a score between 0 and 100.","error");
+        return;
     }
 
-    function updateStatus(email, taskId, newStatus) {
+    // 43. Read and trim the value from `score_${taskId}`
 
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
-        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
 
-        const task = (intern.tasks || []).find(t => t.id === taskId);
-        if (task) {
-            task.status = newStatus;
-            localStorage.setItem('interns', JSON.stringify(interns));
-            showToast(`Status updated to ${newStatus}.`, 'success');
-        }
+    // 44. Validate: if score is empty, NaN, < 0, or > 100, show error toast "Please enter a score between 0 and 100." and return
+
+
+    // 45. Read and trim feedback value from `fb_${taskId}`
+
+    const feedBack=document.getElementById(`fb_${taskId}`).value.trim();
+    const titleElem = document.getElementById(`task_title_${taskId}`);   
+    const titleVal = titleElem ? titleElem.value.trim() : '';
+
+
+
+
+    // 46. Grab `task_title_${taskId}` element and read its trimmed value (fallback to '')
+
+
+    // 47. Get and parse 'interns' array from localStorage
+
+    const interns=JSON.parse(localStorage.getItem('interns'))||[];
+    const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+    const task = (intern && intern.tasks) ? intern.tasks.find(t => t.id === taskId) : null;
+
+
+    // 48. Find the intern matching 'email' (case-insensitive)
+
+
+    // 49. Find the task matching 'taskId' inside that intern's tasks
+
+
+    // 50. If task exists:
+
+    if (task){
+        task.title=titleVal;
+        task.score=Number(score);
+        task.feedback=feedBack;
     }
 
-    function deleteTask(email, taskId) {
-        if (!confirm("Are you sure you want to delete this task?")) {
-            return;
-        }
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];  
-        const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+    localStorage.setItem('interns', JSON.stringify(interns));
+    showToast(`Score saved: ${score} points.`)
+    loadData();
 
-        if (!intern || !intern.tasks) return;
-        intern.tasks = intern.tasks.filter(t => t.id !== taskId);
-        localStorage.setItem('interns', JSON.stringify(interns));
-        loadData(); 
-    }
 
-    function filterTable() {
-        const input = document.getElementById("tableSearch");
-        const filter = input.value.toLowerCase();
 
-        const table = document.querySelector(".table-container table");
-        const rows = table.getElementsByTagName("tr");
+        // 51. Update task.title to the new title value
+
+
+        // 52. Update task.score to Number(val)
+
+
+        // 53. Update task.feedback to the new feedback value
+
+
+        // 54. Save updated interns array to localStorage as JSON string
+
+
+        // 55. Show success toast: `Score saved: ${val} points.`
+
+
+        // 56. Re-render table by calling loadData()
         
-        for (let i = 1; i < rows.length; i++) {
-                const rowText = rows[i].textContent.toLowerCase();
-                if (rowText.includes(filter)) {    
-                    rows[i].style.display = "";
 
-                } else {
-                    rows[i].style.display = "none";
-                }
-            }
+}
+
+
+// =========================================================================
+// 5. UPDATE STATUS FUNCTION
+// =========================================================================
+
+// 57. Create function 'updateStatus' taking 'email', 'taskId', and 'newStatus'
+function updateStatus(email, taskId, newStatus) {
+
+    // 58. Get and parse 'interns' array from localStorage
+    const interns=JSON.parse(localStorage.getItem('interns'))||[];
+
+    const intern = interns.find(i => i.email.toLowerCase() === email.toLowerCase());
+    const task = (intern && intern.tasks) ? intern.tasks.find(t => t.id === taskId) : null;
+
+    // 59. Find the intern matching 'email' (case-insensitive)
+
+    // 60. Find the task matching 'taskId' inside that intern's tasks
+
+    // 61. If task exists:
+      
+    if (task){
+        task.status=newStatus;
+        localStorage.setItem('interns', JSON.stringify(interns));
+        showToast( `Status updated to ${newStatus}.`)
+    }
+
+    else {
+    showToast("Task not found or already deleted!", "error");
+    loadData();
+}
+
+  
+
+
+        // 62. Set task.status = newStatus
+
+
+        // 63. Save updated interns array to localStorage as JSON string
+
+
+        // 64. Show success toast: `Status updated to ${newStatus}.`
+        
+
+}
+
+
+// =========================================================================
+// 6. DELETE TASK FUNCTION
+// =========================================================================
+
+// 65. Create function 'deleteTask' taking 'email' and 'taskId'
+function deleteTask(email, taskId) {
+
+    // 66. Ask confirmation: "Are you sure you want to delete this task?" If cancelled, return
+
+    if(!confirm('Are you sure you want to delete this task?')){
+        return;
+    }
+
+    const interns=JSON.parse(localStorage.getItem('interns'))||[];
+    const intern=interns.find(intern=> intern.email.toLowerCase()===email.toLowerCase());
+
+
+    // 67. Get and parse 'interns' array from localStorage
+
+
+    // 68. Find the intern matching 'email' (case-insensitive)
+
+
+    // 69. If intern or intern.tasks is missing, return
+
+    if (!intern || !intern.tasks){
+        return;
+    }
+
+    intern.tasks=intern.tasks.filter(task=> task.id!==taskId);
+
+    localStorage.setItem('interns', JSON.stringify(interns));
+    loadData();
+
+
+    // 70. Filter out the task matching 'taskId' from intern.tasks
+
+
+    // 71. Save updated interns array to localStorage as JSON string
+
+
+    // 72. Re-render table by calling loadData()
+
+}
+
+
+// =========================================================================
+// 7. LIVE TABLE SEARCH (MANAGER)
+// =========================================================================
+
+// 73. Create function named 'filterTable'
+function filterTable() {
+
+    // 74. Read and lowercase the search input value from 'tableSearch'
+
+    const search=document.getElementById('tableSearch').value.toLowerCase();
+    const table=document.getElementById('intern-table');
+    const rows=table.getElementsByTagName('tr');
+
+    // 75. Grab the table element and all its 'tr' elements
+
+    for (let i=1; i<rows.length;i++){
+        const rowText=rows[i].textContent.toLowerCase();
+        if (rowText.includes(search)){
+            rows[i].style.display="";
         }
+        else{
+            rows[i].style.display='none';
+        }
+    }
 
-        function logout() {
-            localStorage.removeItem('currentManager'); 
-            window.location.href = "login.html";      
-        }        
-        window.onload = loadData;
 
+    // 76. Loop through rows starting at index 1 (skipping header at 0):
+
+
+        // 77. Read the row's textContent in lowercase
+
+
+        // 78. If row text contains search query, display row (""), otherwise hide ("none")
+        
+
+}
+
+
+// =========================================================================
+// 8. LOGOUT & INITIAL LOAD
+// =========================================================================
+
+// 79. Create function named 'logout'
+function logout() {
+
+    localStorage.removeItem('currentManager');
+    window.location.href='login.html';
+    // 80. Remove 'currentManager' from localStorage
+
+
+    // 81. Redirect to 'login.html'
+
+}
+window.onload=loadData;
+
+// 82. Run loadData when the window loads
 </script>
 
 </body>
