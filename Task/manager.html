@@ -19,9 +19,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
         }
 
         .wrapper {
@@ -76,7 +76,6 @@
         }
 
         .form-container {
-            height: 100%;
             padding: 30px; 
             background-color: #f8fafc; 
             border: 2px solid #e2e8f0; 
@@ -176,7 +175,7 @@
                     <select id="selectIntern" required></select>
     
                     <label for="taskTitle">Task Assigned:</label>
-                    <textarea id="taskTitle" placeholder="e.g., Intern Management System" style="width: 400px; height: 180px; padding: 5px; margin-top:10px;" required></textarea>
+                    <textarea id="taskTitle" placeholder="e.g., Intern Management System" style="width: 100%; height: 180px; padding: 5px; margin-top:10px;" required></textarea>
 
                     <button type="submit" class="add-btn">Assign Task</button>
 
@@ -225,7 +224,7 @@ document.getElementById('welcomeText').textContent = `Welcome, ${user}!`;
 // 3. Set the textContent of 'welcomeText' to "Welcome, " + myManagerName + "!"
 
 
-
+ 
 
 // =========================================================================
 // 2. LOAD DATA FUNCTION (POPULATE DROPDOWN & RENDER TABLE)
@@ -237,7 +236,7 @@ function loadData() {
     const interns=JSON.parse(localStorage.getItem('interns')) || [];
     const select=document.getElementById('selectIntern');
 
-    select.innerHTML="<option value=''>--- Select Intern ---<option>";
+    select.innerHTML="<option value=''>--- Select Intern ---</option>";
 
     const assignedInterns=interns.filter(i=> i.manager === user);
     document.getElementById('assignedCount').innerText=assignedInterns.length
@@ -311,12 +310,26 @@ function loadData() {
             const statusCell = row.insertCell(2);    
             statusCell.innerHTML = `
         
-            <select onchange="updateStatus('${intern.email}', ${task.id}, this.value)" style="padding: 4px; font-size: 13px;">
+            <select onchange="updateStatus('${intern.email}', ${task.id}, this.value);" style="padding: 4px; font-size: 13px;">
                 <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
                 <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                 <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
             </select> `;
-                    
+
+            if (task.status === 'Pending') {
+                statusCell.style.backgroundColor = '#ff4d4d'; 
+            } 
+            else if (task.status === 'In Progress') {                        
+                statusCell.style.backgroundColor = '#ffa500'; 
+            } 
+            else if (task.status === 'Completed') {
+                statusCell.style.backgroundColor = '#28a745'; 
+            }
+        
+
+   
+ 
+          
             const scoreCell = row.insertCell(3);
                 
             scoreCell.innerHTML = `
@@ -566,12 +579,13 @@ function updateStatus(email, taskId, newStatus) {
         task.status=newStatus;
         localStorage.setItem('interns', JSON.stringify(interns));
         showToast( `Status updated to ${newStatus}.`)
+        loadData();
     }
 
     else {
-    showToast("Task not found or already deleted!", "error");
-    loadData();
-}
+        showToast("Task not found or already deleted!", "error");   
+        loadData();
+    }
 
   
 

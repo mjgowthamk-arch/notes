@@ -176,120 +176,6 @@
     </div>
 
     <script>
-    const isStudent = localStorage.getItem('isStudent');
-    
-    if (!isStudent) {
-        alert("Access Denied! Please log in first.");
-        window.location.href='login.html';
-    }
-
-    function loadStudentData() {
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
-
-        const currentEmail = localStorage.getItem('currentStudentEmail') || '';
-        const student = interns.find(i=>i.email.toLowerCase()===currentEmail.toLowerCase());
-
-        if (!student) {
-            alert("Student record not found!");
-            logout();
-            return;
-        }
-
-        document.getElementById('welcomeText').textContent = "Welcome, " + student.name + "!";
-        document.getElementById('roleValue').textContent = student.role;
-        document.getElementById('managerValue').textContent = student.manager;
-
-        const tasks=student.tasks || [];
-
-        const gradedScores = tasks
-        .filter(t=>t.score !== '-' && t.score !== '' && !isNaN(Number(t.score)))
-        .map(t=>Number(t.score));
-
-        if (gradedScores.length > 0) {
-            const total = gradedScores.reduce((sum, curr) => sum + Number(curr), 0);
-            const avg = (total / gradedScores.length).toFixed(1);
-            document.getElementById('avgRating').textContent = `${avg} / 100 (Task Completed : ${gradedScores.length} )`;
-        } else {
-            document.getElementById('avgRating').textContent = "-";
-        }
-        
-        const table = document.getElementById('performance-table');
-
-        table.innerHTML = `
-        <tr>
-            <th>Task Assigned</th>
-            <th>Status</th>
-            <th>Score</th>
-            <th>Feedback</th>
-       </tr>
-       `;
-
-       if (tasks.length === 0) {
-        table.insertRow().innerHTML = `<td colspan="4" style="text-align:center; padding: 20px;">No tasks assigned yet.</td>`;
-        return;
-    }
-    
-    tasks.forEach(task => {
-        const row = table.insertRow();
-        
-        row.insertCell(0).textContent = task.title;
-
-        const statusCell = row.insertCell(1);
-        statusCell.innerHTML = `
-        <select onchange="updateTaskStatus(${task.id}, this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
-            <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
-            <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-            <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
-            </select>
-            `;
-            
-            const scoreText=row.insertCell(2)
-            scoreText.textContent = task.score !== '-' ? `${task.score} / 100` : '-';
-            
-            if(task.score>=80){
-                scoreText.style.color='green';
-            }
-            
-            else if(task.score<50){
-                scoreText.style.color='red';
-            }
-            
-            else {
-                if (task.score<80 && task.score>=50){
-                    scoreText.style.color='orange';
-                }
-            }
-
-            row.insertCell(3).textContent = task.feedback ? task.feedback : '-';
-        });
-    }
-    
-    function updateTaskStatus(taskId, newStatus) {
-
-        const savedData = localStorage.getItem('interns');
-        const interns = JSON.parse(savedData) || [];
-
-        const currentEmail = localStorage.getItem('currentStudentEmail') || '';   
-        const student = interns.find(i => i.email.toLowerCase() === currentEmail.toLowerCase());
-
-        if (!student || !student.tasks) return;
-        const task = student.tasks.find(t => t.id === taskId);
-
-        if (task) {
-            task.status = newStatus;
-            localStorage.setItem('interns', JSON.stringify(interns));
-            showToast(`Status updated to "${newStatus}"!`, 'success'); 
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('isStudent');
-        localStorage.removeItem('currentStudentEmail');
-        window.location.href = "login.html";
-    }
-
-    window.onload = loadStudentData;
 
 // =========================================================================
 // 1. ROUTE GUARD
@@ -379,7 +265,7 @@ function loadStudentData() {
 
     if (gradedScores.length!==0){
         const sum=gradedScores.reduce((sum,i)=>sum+i,0);
-        const avg = (total / gradedScores.length).toFixed(1);
+        const avg = (sum / gradedScores.length).toFixed(1);
         document.getElementById('avgRating').textContent=`${avg} / 100 (Task Completed : ${gradedScores.length} )`;
     }
 
@@ -429,10 +315,10 @@ function loadStudentData() {
         const statusCell=row.insertCell(1);
         
         statusCell.innerHTML=
-        `<select onchange="updateTaskStatus(${this.id},this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
-            <option value='Pending' ${this.status}==='Pending' ? 'selected' : ''></option>
-            <option value='In Progress' ${this.status}==='In Progress' ? 'selected' : ''></option>
-            <option value='Completed' ${this.status}==='Completed' ? 'selected' : ''></option>    
+        `<select onchange="updateTaskStatus(${task.id},this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
+            <option value='Pending' ${task.status ==='Pending' ? 'selected' : ''}>Pending</option>
+            <option value='In Progress' ${task.status ==='In Progress' ? 'selected' : ''}>In Progress</option>
+            <option value='Completed' ${task.status ==='Completed' ? 'selected' : ''}>Completed</option>    
         </select>`;
 
 
@@ -452,6 +338,9 @@ function loadStudentData() {
             }
         }
 
+        const feedbackCell=row.insertCell(3);
+        feedbackCell.textContent=task.feedback ? task.feedback : '-';
+
     });
 
         // 20. Insert a new row (table.insertRow())
@@ -465,8 +354,7 @@ function loadStudentData() {
         // 24. If score is >= 80, color green; if < 50, color red; otherwise if between 50 and 79, color orange
 
 
-        const feedbackCell=row.insertCell(3);
-        feedbackCell.textContent=task.feedback ? task.feedback : '-';
+       
 
         // 25. Cell 3: set textContent to task.feedback (or '-' if empty)
         
@@ -513,6 +401,12 @@ function updateTaskStatus(taskId, newStatus) {
         showToast(`Status updated to "${newStatus}"!`);
 
     }
+
+       
+    else {
+        showToast("Task not found or already deleted!", "error");   
+    }
+
 
 
 
