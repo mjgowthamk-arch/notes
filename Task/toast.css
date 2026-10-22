@@ -1,11 +1,11 @@
 #toast-container {
-    gap: 5px;
-    top: 40px;
-    right: 40px;
+    top: 20px;
+    right: 20px;
     z-index: 1000;
     position: fixed;
     display: flex;
     flex-direction: column;
+    gap: 5px;
     pointer-events: none;
 
 }
@@ -40,31 +40,3 @@
     border-left: 10px solid #ef4444; 
 }
 
-.ov-box {
-    display: flex;
-    margin-bottom: 20px;
-    gap: 15px;
-}
-
-.interns-info {
-    flex: 1;
-    background-color: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.box {
-    font-size: 13px;
-    font-weight: bold;
-    color: #6a7990;
-}
-
-.box-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: #1e3a8a; 
-}

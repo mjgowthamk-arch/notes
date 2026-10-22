@@ -5,59 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Accordion</title>
   <style>
-    body {
-        font-family: sans-serif; 
-        max-width: 400px; 
-        margin: 40px auto; 
+    body{
+      font-family: sans-serif;
+      margin:40px auto;
+      max-width: 400px;
+
     }
-    
-    .accordion-btn {
+
+    .btn{
+      background-color: #eee;
       width: 100%;
+      border: none;
+      border-bottom: 1px solid #ccc;
       text-align: left;
       padding: 15px;
-      background: #eee;
-      border: none;
-      cursor: pointer;
       font-weight: bold;
-      border-bottom: 1px solid #ccc;
-    }
-    
-    .accordion-content {
-      padding: 0 15px;
-      background: #fff;
-      max-height: 0;
-      overflow: hidden; 
-      transition: all 0.3s ease; 
+      cursor: pointer;
     }
 
-    .open {
-      max-height: 100px; 
-      padding: 15px;
+    .div{
+      background-color: #fff;
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 10px;
+      transition: all 0.3s ease;  
     }
+
+    .show{
+      max-height: 200px;
+      padding:10px;
+    }
+
+
+  
   </style>
+
 </head>
 <body>
-
   <div>
-    <button class="accordion-btn">What is HTML?</button>
-    <div class="accordion-content">HTML stands for HyperText Markup Language. It structures the web page.</div>
+    <button class="btn" id="btn1">What is HTML?</button>
+    <div class='div' id="div1">HTML stands for HyperText Markup Language. It structures the web page.</div>
   </div>
 
   <div>
-    <button class="accordion-btn">What is CSS?</button>
-    <div class="accordion-content">CSS stands for Cascading Style Sheets. It styles the web page.</div>
+    <button  class="btn" id="btn2">What is CSS?</button>
+    <div class='div' id="div2">CSS stands for Cascading Style Sheets. It styles the web page.</div>
   </div>
 
   <script>
-    const btns = document.querySelectorAll('.accordion-btn');
+    const btns=document.querySelectorAll('.btn');
 
     btns.forEach(btn => {
-      btn.addEventListener('click', function() {
-      
-        const content = this.nextElementSibling;
-        content.classList.toggle('open');
-      });
+       btn.addEventListener('click', function(){
+        const elem=this.nextElementSibling;
+        elem.classList.toggle('show');
+      })
     });
   </script>
+
 </body>
 </html>
