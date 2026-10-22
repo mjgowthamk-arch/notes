@@ -290,7 +290,6 @@
     }
 
     window.onload = loadStudentData;
-</script>
 
 // =========================================================================
 // 1. ROUTE GUARD
@@ -298,6 +297,11 @@
 
 // 1. Read 'isStudent' from localStorage
 
+student=localStorage.getItem('isStudent');
+if(!student){
+    alert('Access Denied! Please log in first.');
+    window.location.href='login.html'
+}
 
 // 2. If 'isStudent' is missing, alert 'Access Denied! Please log in first.' and redirect to 'login.html'
 
@@ -311,6 +315,11 @@
 // 3. Create function named 'loadStudentData'
 function loadStudentData() {
 
+    const interns=JSON.parse(localStorage.getItem('interns'))||[];
+    const email=localStorage.getItem('currentStudentEmail')||'';
+
+    const student=interns.find(intern=> intern.email.toLocaleLowerCase()===email.toLocaleLowerCase());
+
     // 4. Get and parse 'interns' array from localStorage (fallback to empty array [])
 
 
@@ -321,6 +330,19 @@ function loadStudentData() {
 
 
     // 7. If student record not found, alert 'Student record not found!', call logout(), and return
+
+    if(!student){
+        alert('Student record not found!');
+        logout();
+        return;
+    }
+
+
+
+
+    document.getElementById('welcomeText').textContent=`Welcome ${student.name} !`;
+    document.getElementById('roleValue').textContent=student.role;
+    document.getElementById('managerValue').textContent=student.manager;
 
 
 
@@ -336,6 +358,16 @@ function loadStudentData() {
 
     // 11. Extract student.tasks array (fallback to empty array [])
 
+    const tasks=student.tasks||[];
+
+    const gradedScores=[];
+
+    tasks.forEach(task=>{
+        if (task.score !=='-' && task.score !=='' && !isNaN(Number(task.score))){
+            gradedScores.push(Number(task.score));
+        }
+    });
+
 
     // 12. Filter tasks with graded numeric scores (not '-', not '', and isNaN check), mapping them to numbers
 
@@ -343,6 +375,17 @@ function loadStudentData() {
 
 
     // 13. If there is at least one graded score:
+
+
+    if (gradedScores.length!==0){
+        const sum=gradedScores.reduce((sum,i)=>sum+i,0);
+        const avg = (total / gradedScores.length).toFixed(1);
+        document.getElementById('avgRating').textContent=`${avg} / 100 (Task Completed : ${gradedScores.length} )`;
+    }
+
+    else{
+        document.getElementById('avgRating').textContent='-';
+    }
 
 
         // 14. Sum scores using reduce(), compute average to 1 decimal place, and set 'avgRating' textContent with total count
@@ -353,6 +396,13 @@ function loadStudentData() {
     
 
 
+    const table=document.getElementById('performance-table');
+    table.innerHTML=`
+    <th>Task Assigned</th>
+    <th>Status</th>
+    <th>Score</th>
+    <th>Feedback</th>
+    `;
 
     // 16. Grab the table element with ID 'performance-table'
 
@@ -364,36 +414,59 @@ function loadStudentData() {
 
     // 18. If tasks array has 0 items, insert a centered row spanning all 4 columns saying "No tasks assigned yet.", and return
 
-
-
+    if (tasks.length===0){        
+        table.insertRow().innerHTML=`<td colspan=4>No tasks assigned yet.</td>`;
+        return;
+    }
 
     // 19. Loop through each task to build table rows:
 
+    tasks.forEach(task=>{
+        const row=table.insertRow();
+
+        row.insertCell(0).textContent=task.title;
+
+        const statusCell=row.insertCell(1);
+        
+        statusCell.innerHTML=
+        `<select onchange="updateTaskStatus(${this.id},this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
+            <option value='Pending' ${this.status}==='Pending' ? 'selected' : ''></option>
+            <option value='In Progress' ${this.status}==='In Progress' ? 'selected' : ''></option>
+            <option value='Completed' ${this.status}==='Completed' ? 'selected' : ''></option>    
+        </select>`;
+
+
+        const scoreCell=row.insertCell(2);
+        
+        scoreCell.textContent= (task.score!=='-') ? `${task.score}/100` : '-';
+
+        if (task.score>=80){
+            scoreCell.style.color='green';
+        }
+        else if(task.score<80 && task.score>=50){
+            scoreCell.style.color='orange';            
+        }
+        else {
+            if (task.score<50){
+                scoreCell.style.color='red';
+            }
+        }
+
+    });
 
         // 20. Insert a new row (table.insertRow())
 
-
         // 21. Cell 0: set textContent to task.title
-
 
         // 22. Cell 1: set innerHTML to a status dropdown calling updateTaskStatus with task.id and this.value, pre-selecting the current status using ternary checks
 
-
-
-
         // 23. Cell 2: set textContent to task.score + " / 100" (or '-' if ungraded)
-
-
-
 
         // 24. If score is >= 80, color green; if < 50, color red; otherwise if between 50 and 79, color orange
 
 
-
-
-
-
-
+        const feedbackCell=row.insertCell(3);
+        feedbackCell.textContent=task.feedback ? task.feedback : '-';
 
         // 25. Cell 3: set textContent to task.feedback (or '-' if empty)
         
@@ -410,12 +483,22 @@ function updateTaskStatus(taskId, newStatus) {
 
     // 27. Get and parse 'interns' array from localStorage
 
+    const interns=JSON.parse(localStorage.getItem('interns'))||[]; 
+    const email=localStorage.getItem('currentStudentEmail')||'';
+
 
     // 28. Read 'currentStudentEmail' from localStorage (fallback to '')
 
 
     // 29. Find the student matching 'currentEmail' (case-insensitive)
 
+    const student=interns.find(intern=> intern.email.toLocaleLowerCase()===email.toLocaleLowerCase());
+
+    if (!student || !student.tasks){
+        return;
+    }
+
+    const task=student.tasks.find(task=> task.id===taskId);
 
     // 30. If student or student.tasks is missing, return early
 
@@ -424,6 +507,13 @@ function updateTaskStatus(taskId, newStatus) {
 
 
     // 32. If task exists:
+    if (task){
+        task.status=newStatus;
+        localStorage.setItem('interns', JSON.stringify(interns));
+        showToast(`Status updated to "${newStatus}"!`);
+
+    }
+
 
 
         // 33. Set task.status = newStatus
@@ -445,6 +535,10 @@ function updateTaskStatus(taskId, newStatus) {
 // 36. Create function named 'logout'
 function logout() {
 
+    localStorage.removeItem('isStudent');
+    localStorage.removeItem('currentStudentEmail');
+    window.location.href='login.html';
+
     // 37. Remove 'isStudent' from localStorage
 
 
@@ -456,6 +550,8 @@ function logout() {
 }
 
 // 40. Run loadStudentData when the window loads
+window.onload=loadStudentData;
+</script>
 
 </body>
 </html>

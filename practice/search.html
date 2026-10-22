@@ -17,7 +17,7 @@
       background: white;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
       width: 350px;
     }
     
@@ -70,7 +70,7 @@
     const searchInput = document.getElementById('searchInput');
     const cityList = document.getElementById('cityList');
 
-    function renderList(listData) {
+    function List(listData) {
       cityList.innerHTML = '';
       
       if (listData.length === 0) {
@@ -85,16 +85,16 @@
       });
     }
 
-    renderList(cities);
+    List(cities);
 
     searchInput.addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
+      const search = e.target.value.toLowerCase();
       
       const filteredCities = cities.filter(function(city) {
-        return city.toLowerCase().includes(searchTerm);
+        return city.toLowerCase().includes(search);
       });
 
-      renderList(filteredCities);
+      List(filteredCities);
     });
   </script>
 
