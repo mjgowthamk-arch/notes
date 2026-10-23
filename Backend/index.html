@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intern Tracker</title>
+    <style>
+    body {
+        font-family: sans-serif; 
+        padding: 0 10px;     
+
+    } 
+    .container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px; 
+        width: 300px; 
+    }
+
+    .container button {
+        margin-top: 10px;
+    }
+
+    .list li {
+        display: flex;
+        flex-direction: column;
+        gap:10px;
+        max-width: 400px;
+        margin-bottom: 20px;
+        
+    }
+        
+    .list button {
+        width: 30%;
+    }
+    </style>
+</head>
+<body>
+    <h2>Add New Intern</h2>
+
+    <div class="container">
+        <label for="name">Name :</label>
+        <input type="text" id="nameInput">
+
+        <label for="role">Role :</label>
+        <input type="text" id="roleInput">
+        <button onclick="addIntern()">Save Intern</button>
+    </div>
+
+    <h2>Active Interns</h2>
+    <div class="list">
+        <ul id="internList"></ul> 
+    </div>
+
+    <script>
+    async function loadInterns() {
+    
+        const response = await fetch('http://localhost:3000/api/interns');
+        const interns = await response.json();
+        const list = document.getElementById('internList');
+        
+        list.innerHTML = '';
+    
+        interns.forEach(intern => {
+            const li = document.createElement('li');
+            // We add a button that passes the intern's ID to a delete function
+            li.innerHTML = `
+            ${intern.name} - ${intern.role} 
+            <button onclick="updateIntern(${intern.id})" style="color: blue;">Edit Role</button>        
+            <button onclick="deleteIntern(${intern.id})" style="color: red;">Delete</button>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    // 2. POST: Send form data to the server
+    async function addIntern() {
+        const name = document.getElementById('nameInput').value;
+        const role = document.getElementById('roleInput').value;
+        const response = await fetch('http://localhost:3000/api/interns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, role })
+        });
+
+        const result = await response.json();
+        // If successful, alert the message and reload the UI list
+        if(response.ok) {
+            alert(result.message); 
+            loadInterns(); 
+        } 
+        
+        else {
+            // If it fails (like your duplicate check), show the error
+            alert(result.message); 
+        }
+    }
+    
+    // 4. UPDATE: Send modified data to the server
+    async function updateIntern(id) {
+        // Ask the user for the new role via a pop-up box
+        const newRole = prompt("Enter the new role for this intern:");    
+        // If they click cancel or leave it blank, stop the function
+        if (!newRole) return; 
+
+        // Send a PUT request with the new role
+        const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: newRole })
+        });
+
+        const result = await response.json();
+        console.log(result.message);
+
+        // Reload the list to show the new role instantly
+        loadInterns();
+    }
+    
+    // 3. DELETE: Tell the server to remove an item by its ID
+    async function deleteIntern(id) {
+        const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        console.log(result.message);
+
+        // Reload the UI to show the updated list
+        loadInterns();
+    }
+    // Run this immediately when the page opens
+
+loadInterns();
+</script>
+</body>
+</html>
