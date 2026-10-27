@@ -78,7 +78,7 @@
         return;
       }
 
-      listData.forEach(function(city) {
+      listData.forEach(city => {
         const li = document.createElement('li');
         li.textContent = city;
         cityList.append(li);
@@ -87,10 +87,10 @@
 
     List(cities);
 
-    searchInput.addEventListener('input', function(e) {
+    searchInput.addEventListener('input', e => {
       const search = e.target.value.toLowerCase();
       
-      const filteredCities = cities.filter(function(city) {
+      const filteredCities = cities.filter(city => {
         return city.toLowerCase().includes(search);
       });
 

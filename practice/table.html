@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table</title>
+
+    <style>
+        body{
+            background-color: antiquewhite;
+        }
+
+        .tble{
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        td,th{
+            border: 1px solid black;
+            width: 100px;
+            padding: 10px;
+        }
+
+        .highlight{
+            background-color: yellow;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Click the container</h1>
+    <table class="tble" id="table">
+
+        <th colspan="3"><em>Bagua</em> Chart: Direction, Element, Color, Meaning</th>
+
+        <tr>
+            <td>
+                <b>Northwest</b><br>
+                Metal<br>
+                Silver<br>
+                Elders<br>  
+            </td>
+
+            <td>North</td>
+            <td>North East</td>
+        </tr>
+
+        <tr>
+            <td>West</td>
+            <td>Center</td>
+            <td>East</td>
+        </tr>
+    </table>
+    
+    <script> 
+        const table=document.getElementById("table");
+        let selected;
+
+        table.addEventListener('mouseover', (event)=>{
+            let target=event.target.closest('td, th');
+            if (!target) return;
+            highlight(target);        
+        });
+
+        function highlight(cell){        
+            if (selected){
+                selected.classList.remove('highlight');      
+            }
+            selected=cell;
+            selected.classList.add('highlight');
+
+        }
+          
+        table.addEventListener('mouseout',()=>{     
+            selected.classList.remove('highlight'); 
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch</title>
+</head>
+<body>
+    <script> 
+    let fetchedData=[];
+
+    async function fetchall(){
+        try{
+            let urls = [
+            'https://api.github.com/users/iliakan',
+            'https://api.github.com/users/jeresig',
+            'https://api.github.com/users/remy'  ];
+        
+            for (let [index,url] of urls.entries()){
+
+                let controller=new AbortController();
+                let timer= setTimeout(()=>{controller.abort(new Error("Server took too long to respond."));}, 3000);
+
+                let a= await fetch(url, {signal: controller.signal});
+                clearTimeout(timer);
+
+                if (!a.ok){
+                    throw new Error(`Failed, fetch status: ${a.status}`)
+                }
+
+                let b= await a.json();
+                fetchedData.push(b);
+
+                const p=document.createElement('p');
+                p.textContent=JSON.stringify(b);
+
+                document.body.append(p);
+
+                console.log("API", index+1 , "Done");
+            }    
+        }   
+
+        catch (err){
+            console.error('error occured:', err.message); 
+        }
+    }
+
+    fetchall();
+
+
+
+    
+    async function fetchAndDisplayImage() {
+        try {  
+            const response = await fetch('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png');  
+            if (!response.ok) {
+                throw new Error("Network response was not OK");
+            }
+  
+            const myBlob = await response.blob(); 
+            const objectURL = URL.createObjectURL(myBlob);
+            const img = document.createElement('img');
+            img.src = objectURL;
+            document.body.appendChild(img);
+        }
+        
+        catch (error) {  
+            console.error("Failed to fetch the image:", error);
+        }
+    }
+
+    fetchAndDisplayImage();
+
+   
+    fetch('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png')
+    .then(response => {
+        if (!response.ok) throw new Error("Network response was not OK");
+        return response.blob(); 
+    })
+    .then(myBlob => {
+        const objectURL = URL.createObjectURL(myBlob);
+        const img = document.createElement('img');
+        img.src = objectURL;
+        document.body.appendChild(img);
+    })
+    .catch(error => {
+        console.error("Failed to fetch the image:", error);
+    });
+
+    </script>
+    
+</body>
+</html>
