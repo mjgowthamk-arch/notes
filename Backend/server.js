@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-
 const { Pool } = require('pg');
 
 // Create a connection pool using the URL from your .env file
@@ -15,25 +14,136 @@ pool.connect()
     .then(() => console.log("✅ Successfully connected to PostgreSQL!"))
     .catch((err) => console.error("❌ Database connection error:", err.stack));
     
-
 const app = express();
 
 // Middleware
 app.use(cors()); // Allow frontend to connect
 app.use(express.json()); // Allow server to read JSON data sent in requests
 
+
+// 1. READ (GET Request) - Fetch data from database and send to frontend
+app.get('/api/interns', async (req, res) => {
+    try {
+        // Grab everything from the interns table, sorted by ID so the list stays in order
+        const allInterns = await pool.query("SELECT * FROM interns ORDER BY id ASC");
+        
+        // Send the database rows to the frontend UI
+        res.json(allInterns.rows);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Database error" });
+    }
+});
+
+
+// 2. CREATE (POST Request) - Receive data from frontend
+app.post('/api/interns', async (req, res) => {
+    try {
+        // Grab the data sent from the frontend
+        const { name, role } = req.body;
+
+        // 1. Check if the name already exists in the SQL table
+        const existingIntern = await pool.query(
+            "SELECT * FROM interns WHERE name = $1", 
+            [name]
+        );
+        
+        if (existingIntern.rows.length > 0) {
+            return res.status(400).json({ message: "This intern already exists!" });
+        }
+
+        // 2. Insert the new intern into PostgreSQL permanently
+        const newIntern = await pool.query(
+            "INSERT INTO interns (name, role) VALUES ($1, $2) RETURNING *",
+            [name, role]
+        );
+
+        // Send the saved SQL data back to the frontend
+        res.json({ message: "Intern added!", data: newIntern.rows[0] });
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Database error" });
+    }
+});
+
+
+// 3. UPDATE (PUT Request) - Modify existing data in PostgreSQL
+app.put('/api/interns/:id', async (req, res) => {
+    try {
+        const idToUpdate = req.params.id;
+        const newRole = req.body.role;
+        
+        // SQL command to update the role for a specific ID
+        const updateIntern = await pool.query(
+            "UPDATE interns SET role = $1 WHERE id = $2 RETURNING *",
+            [newRole, idToUpdate]
+        );
+        
+        // If no rows were updated, the ID doesn't exist
+        if (updateIntern.rows.length === 0) {
+            return res.status(404).json({ message: "Intern not found" });
+        }
+
+        res.json({ message: "Intern updated successfully!" });
+    } 
+    catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Database error" });
+    }
+});
+
+
+// 4. DELETE Request - Remove data permanently from PostgreSQL
+app.delete('/api/interns/:id', async (req, res) => {
+    try {
+        const idToDelete = req.params.id;
+        
+        // SQL command to delete the row matching the ID
+        const deleteIntern = await pool.query(
+            "DELETE FROM interns WHERE id = $1 RETURNING *",
+            [idToDelete]
+        );
+        
+        if (deleteIntern.rows.length === 0) {
+            return res.status(404).json({ message: "Intern not found" });
+        }
+
+        res.json({ message: "Intern removed successfully!" });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Database error" });
+    }
+});
+
+
+// Start the server
+// Grab the port from .env, or default to 3000 if it fails
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server is running live on http://localhost:${PORT}`);
+    console.log(`Testing my database connection string: ${process.env.DATABASE_URL}`);
+});
+
+
+
+
+
+/*
 // Temporary Database (runs in computer memory)
 let interns = [
     { id: 1, name: "Rahul", role: "Frontend Intern" }
 ];
 
 // 1. READ (GET Request) - Send data to frontend
+
 app.get('/api/interns', (req, res) => {
     res.json(interns);
 });
 
 // 2. CREATE (POST Request) - Receive data from frontend
-// 2. CREATE (POST Request) - Receive data from frontend
+
 app.post('/api/interns', (req, res) => {
     // Check if the name already exists in our array
     const existingIntern = interns.find(intern => intern.name === req.body.name);
@@ -52,7 +162,6 @@ app.post('/api/interns', (req, res) => {
     interns.push(newIntern);
     res.json({ message: "Intern added!", data: newIntern });
 });
-
 
 // 3. UPDATE (PUT Request) - Modify existing data
 app.put('/api/interns/:id', (req, res) => {
@@ -82,116 +191,4 @@ app.delete('/api/interns/:id', (req, res) => {
     res.json({ message: "Intern removed successfully!" });
 });
 
-// Start the server
-// Grab the port from .env, or default to 3000 if it fails
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-    console.log(`Server is running live on http://localhost:${PORT}`);
-    console.log(`Testing my database connection string: ${process.env.DATABASE_URL}`);
-});
-
-
-
-
-
-
-
-
-
-/*
-
-// ==========================================
-// 1. SETUP & IMPORTS
-// ==========================================
-// Import the 'express' package
-
-const express=require('express');
-const cors=require('cors');
-
-
-require('dotenv').config();
-// Import the 'cors' package
-
-// Configure 'dotenv' so the server can read your .env file
-
-// Create the express application instance and store it in a variable called 'app'
-
-
-// ==========================================
-// 2. MIDDLEWARE
-// ==========================================
-// Tell the app to use the CORS middleware (allows frontend to talk to backend)
-
-// Tell the app to use the express.json() middleware (allows server to read JSON bodies)
-
-
-// ==========================================
-// 3. TEMPORARY DATABASE
-// ==========================================
-// Create a 'let' array called 'interns' holding one default object (id: 1, name: "Rahul", role: "Frontend Intern")
-
-
-// ==========================================
-// 4. API ROUTES (CRUD)
-// ==========================================
-
-// --- 1. READ (GET Request) ---
-// Create a GET route at '/api/interns'
-    
-    // Respond by sending the 'interns' array as JSON
-
-
-// --- 2. CREATE (POST Request) ---
-// Create a POST route at '/api/interns'
-    
-    // Check if the name sent from the frontend already exists in our array using .find()
-    
-    // If the existing intern is found:
-        // Stop execution and return a 400 status with a JSON error message
-        
-    // If they do not exist, create a new object:
-        // Set 'id' to the current length of the array + 1
-        // Set 'name' to the name sent in the request body
-        // Set 'role' to the role sent in the request body
-        
-    // Push this new object into the 'interns' array
-    
-    // Respond with a JSON success message and the new intern data
-
-
-// --- 3. UPDATE (PUT Request) ---
-// Create a PUT route at '/api/interns/:id'
-    
-    // Grab the dynamic 'id' from the URL (req.params) and parse it into an integer
-    
-    // Use .find() to locate the specific intern in the array by their ID
-    
-    // If the intern is not found:
-        // Stop execution and return a 404 status with an error message
-        
-    // Update the found intern's role using the new role sent in the request body
-    
-    // Respond with a JSON success message
-
-
-// --- 4. DELETE (DELETE Request) ---
-// Create a DELETE route at '/api/interns/:id'
-    
-    // Grab the dynamic 'id' from the URL and parse it into an integer
-    
-    // Update the 'interns' array using .filter() to keep everyone EXCEPT the one with that ID
-    
-    // Respond with a JSON success message
-
-
-// ==========================================
-// 5. SERVER ACTIVATION
-// ==========================================
-// Create a PORT variable. Try to get it from process.env.PORT, otherwise default to 3000
-
-// Tell the app to listen on that PORT
-    // Inside the callback, console.log that the server is running on localhost
-    // console.log your secret DATABASE_PASSWORD from the environment variables to test it
-
-    */
+*/

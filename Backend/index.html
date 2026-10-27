@@ -6,8 +6,8 @@
     body {
         font-family: sans-serif; 
         padding: 0 10px;     
-
     } 
+
     .container {
         display: flex;
         flex-direction: column;
@@ -24,8 +24,7 @@
         flex-direction: column;
         gap:10px;
         max-width: 400px;
-        margin-bottom: 20px;
-        
+        margin-bottom: 20px; 
     }
         
     .list button {
@@ -52,7 +51,6 @@
 
     <script>
     async function loadInterns() {
-    
         const response = await fetch('http://localhost:3000/api/interns');
         const interns = await response.json();
         const list = document.getElementById('internList');
@@ -61,7 +59,7 @@
     
         interns.forEach(intern => {
             const li = document.createElement('li');
-            // We add a button that passes the intern's ID to a delete function
+         
             li.innerHTML = `
             ${intern.name} - ${intern.role} 
             <button onclick="updateIntern(${intern.id})" style="color: blue;">Edit Role</button>        
@@ -71,7 +69,6 @@
         });
     }
 
-    // 2. POST: Send form data to the server
     async function addIntern() {
         const name = document.getElementById('nameInput').value;
         const role = document.getElementById('roleInput').value;
@@ -82,26 +79,20 @@
         });
 
         const result = await response.json();
-        // If successful, alert the message and reload the UI list
         if(response.ok) {
             alert(result.message); 
             loadInterns(); 
         } 
-        
         else {
-            // If it fails (like your duplicate check), show the error
             alert(result.message); 
         }
     }
     
-    // 4. UPDATE: Send modified data to the server
+  
     async function updateIntern(id) {
-        // Ask the user for the new role via a pop-up box
-        const newRole = prompt("Enter the new role for this intern:");    
-        // If they click cancel or leave it blank, stop the function
+        const newRole = prompt("Enter the new role for this intern:");            
         if (!newRole) return; 
 
-        // Send a PUT request with the new role
         const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -110,12 +101,9 @@
 
         const result = await response.json();
         console.log(result.message);
-
-        // Reload the list to show the new role instantly
         loadInterns();
     }
     
-    // 3. DELETE: Tell the server to remove an item by its ID
     async function deleteIntern(id) {
         const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
             method: 'DELETE'
@@ -123,98 +111,10 @@
         
         const result = await response.json();
         console.log(result.message);
-
-        // Reload the UI to show the updated list
         loadInterns();
-    }
-    // Run this immediately when the page opens
-
-loadInterns();
-
-
-// ==========================================
-// 1. GET: Fetch and display data
-// ==========================================
-// Create an async function called loadInterns
+    } 
     
-    // Pause and fetch data from the GET route (http://localhost:3000/api/interns)
-    
-    // Pause and convert the backend's response into a JSON object
-    
-    // Select the HTML <ul> element using its ID ('internList')
-    
-    // Clear out the <ul>'s inner HTML to prevent duplicating the list on reload
-    
-    // Loop through the array of interns received from the backend
-        
-        // Inside the loop: Create a new <li> element
-        
-        // Inside the loop: Set the inner HTML of the <li> to show the name and role
-        
-        // Inside the loop: Add an 'Edit' button that calls updateIntern(intern.id) when clicked
-        
-        // Inside the loop: Add a 'Delete' button that calls deleteIntern(intern.id) when clicked
-        
-        // Inside the loop: Append the finished <li> to the main <ul> element
-
-
-// ==========================================
-// 2. POST: Add a new intern
-// ==========================================
-// Create an async function called addIntern
-    
-    // Get the current text value from the Name input field
-    
-    // Get the current text value from the Role input field
-    
-    // Make a fetch request to the POST route
-        // Set the method to 'POST'
-        // Add headers to tell the server you are sending 'application/json'
-        // Stringify the name and role into JSON format for the body
-    
-    // Pause and convert the server's response back into JSON
-    
-    // Check if the server response was successful (response.ok)
-        // If true: Alert the success message and call loadInterns() to refresh the UI list
-        // If false: Alert the error message (e.g., your duplicate check failure)
-
-
-// ==========================================
-// 3. PUT: Edit an existing intern
-// ==========================================
-// Create an async function called updateIntern that accepts an 'id' parameter
-    
-    // Open a browser prompt asking the user for a new role and store the answer
-    
-    // If the user hits cancel or leaves the prompt blank, return to stop execution
-    
-    // Make a fetch request to the PUT route, attaching the dynamic 'id' to the end of the URL
-        // Set the method to 'PUT'
-        // Add headers for 'application/json'
-        // Stringify the new role into JSON format for the body
-    
-    // Pause and convert the response to JSON, then log the message
-    
-    // Call loadInterns() to refresh the screen with the updated role
-
-
-// ==========================================
-// 4. DELETE: Remove an intern
-// ==========================================
-// Create an async function called deleteIntern that accepts an 'id' parameter
-    
-    // Make a fetch request to the DELETE route, attaching the dynamic 'id' to the end of the URL
-        // Set the method to 'DELETE'
-        
-    // Pause and convert the response to JSON, then log the message
-    
-    // Call loadInterns() to refresh the screen so the deleted item disappears
-
-
-// ==========================================
-// 5. INITIAL TRIGGER
-// ==========================================
-// Call loadInterns() right here at the bottom so it executes immediately when the page opens
-</script>
+    loadInterns();
+    </script>
 </body>
 </html>
