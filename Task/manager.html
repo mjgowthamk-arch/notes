@@ -236,7 +236,7 @@ function loadData() {
 
     select.innerHTML="<option value=''>--- Select Intern ---</option>";
 
-    const assignedInterns=interns.filter(i=> i.manager === user);
+    const assignedInterns = interns.filter(i => i.manager && user && i.manager.trim().toLowerCase() === user.trim().toLowerCase());
     document.getElementById('assignedCount').innerText=assignedInterns.length
 
 
@@ -277,12 +277,14 @@ function loadData() {
 
         const table=document.getElementById('intern-table');
         table.innerHTML=`
-        <th>Intern</th>
-        <th>Task Assigned</th>
-        <th>Status</th>
-        <th>Score</th>
-        <th>Feedback</th>
-        <th>Action</th>
+        <tr>
+            <th>Intern</th>
+            <th>Task Assigned</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Feedback</th>
+            <th>Action</th>
+        </tr>    
         `;
 
     // 15. Grab the table element with ID 'intern-table'
@@ -314,19 +316,20 @@ function loadData() {
                 <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
             </select> `;
 
+            const selectBox = statusCell.querySelector('select');
+            selectBox.style.backgroundColor = '#ffffff';
+            selectBox.style.color = '#334155';
+
             if (task.status === 'Pending') {
-                statusCell.style.backgroundColor = '#ff4d4d'; 
+                selectBox.style.borderLeft = '10px solid #ff4d4d';
             } 
             else if (task.status === 'In Progress') {                        
-                statusCell.style.backgroundColor = '#ffa500'; 
+                selectBox.style.borderLeft = '10px solid #e6ca18';
             } 
             else if (task.status === 'Completed') {
-                statusCell.style.backgroundColor = '#28a745'; 
+                selectBox.style.borderLeft = '10px solid #28a745';
             }
-        
-
-   
- 
+            
           
             const scoreCell = row.insertCell(3);
                 
@@ -450,6 +453,7 @@ function assignTask() {
     });
 
         localStorage.setItem('interns', JSON.stringify(interns));
+        showToast("Task assigned successfully!", "success");
         document.getElementById('taskForm').reset();
         loadData();
     }
@@ -527,9 +531,15 @@ if (score === '' || isNaN(Number(score)) || Number(score) < 0 || Number(score) >
         task.feedback=feedBack;
     }
 
+    else {
+        showToast("Task not found!", "error");
+        return;
+    }
+
     localStorage.setItem('interns', JSON.stringify(interns));
     showToast(`Score saved: ${score} points.`)
     loadData();
+
 
 
 
@@ -632,6 +642,7 @@ function deleteTask(email, taskId) {
     intern.tasks=intern.tasks.filter(task=> task.id!==taskId);
 
     localStorage.setItem('interns', JSON.stringify(interns));
+    showToast("Task deleted successfully!", "success"); 
     loadData();
 
 

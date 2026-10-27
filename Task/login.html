@@ -160,7 +160,7 @@
                 
         // 7. Redirect the browser to 'admin.html'
 
-        else if(username== 'manager'&& password == '123' && (role=='Manager 1' || role=='Manager 2')){
+        else if(username.toLowerCase() == 'manager'&& password == '123' && (role=='Manager 1' || role=='Manager 2')){
             localStorage.setItem('currentManager', role);
             window.location.href='manager.html';
         }

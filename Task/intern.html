@@ -181,7 +181,7 @@
 
 // 1. Read 'isStudent' from localStorage
 
-student=localStorage.getItem('isStudent');
+const student=localStorage.getItem('isStudent');
 if(!student){
     alert('Access Denied! Please log in first.');
     window.location.href='login.html'
@@ -282,10 +282,12 @@ function loadStudentData() {
 
     const table=document.getElementById('performance-table');
     table.innerHTML=`
-    <th>Task Assigned</th>
-    <th>Status</th>
-    <th>Score</th>
-    <th>Feedback</th>
+    <tr>
+        <th>Task Assigned</th>
+        <th>Status</th>
+        <th>Score</th>
+        <th>Feedback</th>
+    </tr>    
     `;
 
     // 16. Grab the table element with ID 'performance-table'

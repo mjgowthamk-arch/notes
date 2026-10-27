@@ -323,7 +323,7 @@
         const interns=JSON.parse(localStorage.getItem('interns')) || []; 
 
         if(interns.some(i=> i.email.toLowerCase()===email.toLowerCase())){
-            showToast("An intern with this email already exists!");
+            showToast("An intern with this email already exists!", "error");
             return;
         }
 
@@ -377,17 +377,22 @@
         const table=document.getElementById('intern-table');
      
         table.innerHTML=`
-
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Manager</th>
-        <th>Average Task Points</th>
-        <th>Action</th>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Manager</th>
+            <th>Average Task Points</th>
+            <th>Action</th>
+        </tr>
         `;
 
-        if(interns.length===0){
-            table.innerHTML=`<td colspan=6> No interns yet.</td>`;
+
+        if (interns.length === 0) {
+            table.insertRow().innerHTML = `<td colspan="6" style="text-align:center; padding: 20px;">No interns yet.</td>`;
+            document.getElementById('totalInternsVal').textContent = '0';
+            document.getElementById('totalTasksVal').textContent = '0';
+            document.getElementById('overallAvgVal').textContent = '-';
             return;
         }
 

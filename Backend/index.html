@@ -130,6 +130,91 @@
     // Run this immediately when the page opens
 
 loadInterns();
+
+
+// ==========================================
+// 1. GET: Fetch and display data
+// ==========================================
+// Create an async function called loadInterns
+    
+    // Pause and fetch data from the GET route (http://localhost:3000/api/interns)
+    
+    // Pause and convert the backend's response into a JSON object
+    
+    // Select the HTML <ul> element using its ID ('internList')
+    
+    // Clear out the <ul>'s inner HTML to prevent duplicating the list on reload
+    
+    // Loop through the array of interns received from the backend
+        
+        // Inside the loop: Create a new <li> element
+        
+        // Inside the loop: Set the inner HTML of the <li> to show the name and role
+        
+        // Inside the loop: Add an 'Edit' button that calls updateIntern(intern.id) when clicked
+        
+        // Inside the loop: Add a 'Delete' button that calls deleteIntern(intern.id) when clicked
+        
+        // Inside the loop: Append the finished <li> to the main <ul> element
+
+
+// ==========================================
+// 2. POST: Add a new intern
+// ==========================================
+// Create an async function called addIntern
+    
+    // Get the current text value from the Name input field
+    
+    // Get the current text value from the Role input field
+    
+    // Make a fetch request to the POST route
+        // Set the method to 'POST'
+        // Add headers to tell the server you are sending 'application/json'
+        // Stringify the name and role into JSON format for the body
+    
+    // Pause and convert the server's response back into JSON
+    
+    // Check if the server response was successful (response.ok)
+        // If true: Alert the success message and call loadInterns() to refresh the UI list
+        // If false: Alert the error message (e.g., your duplicate check failure)
+
+
+// ==========================================
+// 3. PUT: Edit an existing intern
+// ==========================================
+// Create an async function called updateIntern that accepts an 'id' parameter
+    
+    // Open a browser prompt asking the user for a new role and store the answer
+    
+    // If the user hits cancel or leaves the prompt blank, return to stop execution
+    
+    // Make a fetch request to the PUT route, attaching the dynamic 'id' to the end of the URL
+        // Set the method to 'PUT'
+        // Add headers for 'application/json'
+        // Stringify the new role into JSON format for the body
+    
+    // Pause and convert the response to JSON, then log the message
+    
+    // Call loadInterns() to refresh the screen with the updated role
+
+
+// ==========================================
+// 4. DELETE: Remove an intern
+// ==========================================
+// Create an async function called deleteIntern that accepts an 'id' parameter
+    
+    // Make a fetch request to the DELETE route, attaching the dynamic 'id' to the end of the URL
+        // Set the method to 'DELETE'
+        
+    // Pause and convert the response to JSON, then log the message
+    
+    // Call loadInterns() to refresh the screen so the deleted item disappears
+
+
+// ==========================================
+// 5. INITIAL TRIGGER
+// ==========================================
+// Call loadInterns() right here at the bottom so it executes immediately when the page opens
 </script>
 </body>
 </html>
