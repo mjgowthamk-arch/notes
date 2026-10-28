@@ -11,8 +11,8 @@ const pool = new Pool({
 
 // Test the connection as soon as the server boots up
 pool.connect()
-    .then(() => console.log("✅ Successfully connected to PostgreSQL!"))
-    .catch((err) => console.error("❌ Database connection error:", err.stack));
+    .then(() => console.log("Successfully connected to PostgreSQL!"))
+    .catch((err) => console.error("Database connection error:", err.stack));
     
 const app = express();
 
