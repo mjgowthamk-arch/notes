@@ -34,15 +34,14 @@
 </head>
 <body>
     <h2>Add New Intern</h2>
+        <form id="addIntern" class="container">
+            <label for="name">Name :</label>
+            <input type="text" id="nameInput">
 
-    <div class="container">
-        <label for="name">Name :</label>
-        <input type="text" id="nameInput">
-
-        <label for="role">Role :</label>
-        <input type="text" id="roleInput">
-        <button onclick="addIntern()">Save Intern</button>
-    </div>
+            <label for="role">Role :</label>
+            <input type="text" id="roleInput">
+            <button onclick="addIntern()">Save Intern</button>
+        </form>
 
     <h2>Active Interns</h2>
     <div class="list">
@@ -86,6 +85,9 @@
         else {
             alert(result.message); 
         }
+
+        const form=document.getElementById('addIntern');
+        form.reset();        
     }
     
   
