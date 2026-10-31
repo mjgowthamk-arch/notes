@@ -11,7 +11,7 @@ const manageFiles = async () => {
     const data = await fsPromises.readFile('notes.txt', 'utf-8');
     console.log('File content:', data);
 
-    await fsPromises.mkdir('backup-folder', { recursive: true });
+    await fsPromises.mkdir('backup_folder', { recursive: true });
     console.log('Directory created.');
 
     const files = await fsPromises.readdir('.');
