@@ -1,9 +1,9 @@
-const express=require('express')
-const server=express()
+const express=require('express');
+const server=express();
 
 require('dotenv').config();
 
-const {Pool}=require('pg')
+const {Pool}=require('pg');
 
 const pool= new Pool ({
     user: process.env.DB_USER,
@@ -16,7 +16,7 @@ const pool= new Pool ({
 server.get('/api/users/callback', (req,res)=>{
     const query='select * from users';
 
-    // The pg library accepts a callback as the second argument
+    // 2nd arg as callback function
     pool.query(query, (err,result)=>{
         if (err){
             console.error('Database error:', err)

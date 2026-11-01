@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Development JWT Login</title>
+</head>
+<body>
+    <form id="loginForm">
+
+        <input type="email" id="email" placeholder="Email" autocomplete="username" required>
+        <input type="password" id="pass" placeholder="Password" autocomplete="current-password" required>
+        
+        <button type="button" id="loginBtn">Log In</button>
+    </form>
+
+    <br><br>
+    <button id="dashboardBtn">View Secure Dashboard</button>
+
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', async (e) => {
+            e.preventDefault(); 
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+
+            if (!email || !password) {
+                alert("Please enter both email and password");
+                return;
+            }
+
+            try {
+                // Send login request to your /auth route
+                const loginRes = await fetch('http://localhost:3000/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await loginRes.json();
+
+                if (loginRes.ok) {
+                    // Save the raw JWT to localStorage
+                    localStorage.setItem('jwtToken', data.token);
+                    alert("Logged in! Token saved to localStorage.");
+                } else {
+                    alert(data.error || "Invalid credentials");
+                }
+            } 
+            catch (err) {
+                console.error(err);
+                alert("Cannot connect to server.");
+            }
+        });
+
+        // 2. Handle Dashboard Access
+        document.getElementById('dashboardBtn').addEventListener('click', async () => {
+            // Grab the token from the browser's storage
+            const token = localStorage.getItem('jwtToken');
+
+            if (!token) {
+                alert("Access Denied: No token found. Please log in first.");
+                return;
+            }
+
+            try {
+                // Manually attach the token to the Authorization header
+                const response = await fetch('http://localhost:3000/dashboard', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Success: " + data.message + "\nUser ID: " + data.userId);
+                } else {
+                    // If token is expired or invalid, clear it
+                    localStorage.removeItem('jwtToken');
+                    alert("Access Denied: " + data.error);
+                }
+            } catch (err) {
+                alert("Server connection failed.");
+            }
+        });
+    </script>
+</body>
+</html>

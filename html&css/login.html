@@ -6,24 +6,7 @@
     <link rel="icon" href="/images/login.png">
 
     <title>Login Form</title>
-
-    <style>
     
-    .logo {
-      width: 200px;
-      display: block;  /* Required for margin: auto; */
-      margin: auto;     
-    }
-
-    .cont2 {
-        background-color: lightgray;  
-        padding: 80px;
-        width: 300px;
-        margin: auto;
-    }
-
-    </style>
-
 </head>
 
 <body>
@@ -31,17 +14,16 @@
         <img src="/images/login.png" class="logo" alt="Login Portal Logo">
     </div>
 
-
-    <form action="" method="post">
+    <form id="loginForm">
 
         <div class="cont2">
 
-            <label for="user">User name:</label>
-            <input type="text" name="username" id="user" placeholder="Enter your user name" minlength="3" maxlength="20" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" placeholder="Enter your email" autocomplete="email" required>
             <br><br>
 
             <label for="pass">Password:</label>
-            <input type="password" name="password" id="pass" minlength="6" placeholder="Enter your password" pattern="(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}" title="Must be at least 6 characters and include at least 1 number and 1 symbol" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+            <input type="password" name="password" id="pass" minlength="3" placeholder="Enter your password" autocomplete="current-password" required>
             <br><br>
 
             <label for="chbox">Remember me</label>
@@ -53,6 +35,70 @@
         </div>
 
     </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop the page from reloading
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+
+            try {
+                // 1. Send the data to your Express backend /login route
+                const response = await fetch('http://localhost:3000/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 2. Success! Save the JWT token in the browser's storage
+                    localStorage.setItem('jwtToken', data.token);
+                    
+                    alert("Login successful! Redirecting to dashboard...");
+
+                    // 3. Automatically fetch the protected dashboard route
+                    loadDashboard();
+                } else {
+                    // Shows "Invalid credentials" if the password or email is wrong
+                    alert(data.error || "Login failed");
+                }
+            } catch (err) {
+                console.error("Network error:", err);
+                alert("Could not connect to the server.");
+            }
+        });
+
+        // Function to test the protected dashboard route
+        async function loadDashboard() {
+            const token = localStorage.getItem('jwtToken');
+
+            const response = await fetch('http://localhost:3000/dashboard', {
+                method: 'GET',
+                headers: {
+                    // Hand the JWT token to your backend bouncer
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Replace the login form with the welcome message from your dashboard route
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 100px; font-family: sans-serif;">
+                        <h1>${result.message}</h1>
+                        <p>Your Database User ID is: <strong>${result.userId}</strong></p>
+                        <p style="color: green;">🔒 Authenticated securely via JWT Token!</p>
+                    </div>
+                `;
+            } else {
+                alert("Access Denied: " + result.error);
+            }
+        }
+    </script>
 
 </body>
 </html>
