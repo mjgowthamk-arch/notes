@@ -1,0 +1,21 @@
+$kind: http-request
+method: DELETE
+url: 'http://localhost:3000/api/interns/6'
+order: 6000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+      
+      pm.test("Response confirms deletion", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('message');
+          pm.expect(jsonData.message).to.equal('Intern removed successfully!');
+      });
+      
+      pm.test("Response time is less than 2000ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });

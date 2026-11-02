@@ -5,7 +5,7 @@
     <style>
     body {
         font-family: sans-serif; 
-        padding: 0 10px;     
+        padding: 0 20px;    
     } 
 
     .container {
@@ -13,6 +13,7 @@
         flex-direction: column;
         gap: 5px; 
         width: 300px; 
+        margin-bottom: 20px;
     }
 
     .container button {
@@ -22,7 +23,7 @@
     .list li {
         display: flex;
         flex-direction: column;
-        gap:10px;
+        gap: 10px;
         max-width: 400px;
         margin-bottom: 20px; 
     }
@@ -33,90 +34,199 @@
     </style>
 </head>
 <body>
-    <h2>Add New Intern</h2>
-        <form id="addIntern" class="container">
-            <label for="name">Name :</label>
-            <input type="text" id="nameInput">
+    <h2>Login</h2>
+    <form id="loginForm" class="container" onsubmit="loginUser(event)">
+        <label for="loginUsername">Username:</label>
+        <input type="text" id="loginUsername" required>
 
-            <label for="role">Role :</label>
-            <input type="text" id="roleInput">
-            <button onclick="addIntern()">Save Intern</button>
-        </form>
+        <label for="loginPassword">Password:</label>
+        <input type="password" id="loginPassword" required>
+        
+        <button type="submit">Login & Get Token</button>
+    </form>
+
+    <hr>
+
+    <h2>Add New Intern (Admin Only)</h2>
+    <form id="addIntern" class="container" onsubmit="addIntern(event)">
+        <label for="name">Name :</label>
+        <input type="text" id="nameInput" required>
+
+        <label for="role">Role :</label>
+        <input type="text" id="roleInput" required>
+        
+        <button type="submit">Save Intern</button>
+    </form>
 
     <h2>Active Interns</h2>
     <div class="list">
         <ul id="internList"></ul> 
     </div>
 
-    <script>
-    async function loadInterns() {
-        const response = await fetch('http://localhost:3000/api/interns');
+<script>
+
+async function loginUser(event) {
+
+    event.preventDefault(); 
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        const response = await fetch('http://localhost:3000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem('token', result.token);
+
+            alert("Logged in successfully! Token saved.");
+            loadInterns(); 
+        }
+        else {
+            alert(result.message);
+        }  
+    } 
+    catch (error) {
+        console.error("Login error:", error);
+    }    
+}
+
+async function loadInterns() {
+
+    const token = localStorage.getItem('token');
+
+    try {
+        const response = await fetch('http://localhost:3000/api/interns', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            console.warn("Could not load interns:", errData.message);
+            return;
+        }
+
         const interns = await response.json();
         const list = document.getElementById('internList');
-        
         list.innerHTML = '';
-    
+        
         interns.forEach(intern => {
             const li = document.createElement('li');
-         
             li.innerHTML = `
-            ${intern.name} - ${intern.role} 
-            <button onclick="updateIntern(${intern.id})" style="color: blue;">Edit Role</button>        
+            <strong>${intern.name}</strong> - ${intern.role} 
+            <button onclick="updateIntern(${intern.id})" style="color: blue;">Put</button>        
+            <button onclick="patchIntern(${intern.id})" style="color: purple;">Patch</button>        
             <button onclick="deleteIntern(${intern.id})" style="color: red;">Delete</button>
             `;
             list.appendChild(li);
         });
     }
+    catch (error) {
+        console.error("Error fetching interns:", error);
+    }    
+}
 
-    async function addIntern() {
-        const name = document.getElementById('nameInput').value;
-        const role = document.getElementById('roleInput').value;
-        const response = await fetch('http://localhost:3000/api/interns', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, role })
-        });
+async function addIntern(event) {
 
-        const result = await response.json();
-        if(response.ok) {
-            alert(result.message); 
-            loadInterns(); 
-        } 
-        else {
-            alert(result.message); 
-        }
+    event.preventDefault(); 
+    const name = document.getElementById('nameInput').value;
+    const role = document.getElementById('roleInput').value;
+    const token = localStorage.getItem('token'); 
 
-        const form=document.getElementById('addIntern');
-        form.reset();        
+    const response = await fetch('http://localhost:3000/api/interns', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ name, role })
+    });
+
+    const result = await response.json();
+    alert(result.message);
+
+    if(response.ok) {
+        loadInterns(); 
+        document.getElementById('addIntern').reset();
     }
+}
     
-  
-    async function updateIntern(id) {
-        const newRole = prompt("Enter the new role for this intern:");            
-        if (!newRole) return; 
-
-        const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: newRole })
-        });
-
-        const result = await response.json();
-        console.log(result.message);
-        loadInterns();
+async function updateIntern(id) {
+    const newName = prompt("Enter new name:");
+    const newRole = prompt("Enter new role:");            
+    
+    if (!newName || !newRole) {
+        alert("PUT requires both name and role!");
+        return; 
     }
-    
-    async function deleteIntern(id) {
-        const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
-            method: 'DELETE'
-        });
-        
-        const result = await response.json();
-        console.log(result.message);
-        loadInterns();
-    } 
-    
+
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
+        method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ name: newName, role: newRole }) 
+    });
+
+    const result = await response.json();
+    alert(result.message);
     loadInterns();
-    </script>
+}
+
+async function patchIntern(id) {
+    const newName = prompt("Enter new name :");
+    const newRole = prompt("Enter new role :");            
+
+    const updateData = {};
+    if (newName && newName.trim() !== "") updateData.name = newName;
+    if (newRole && newRole.trim() !== "") updateData.role = newRole;
+
+    if (Object.keys(updateData).length === 0) {
+        alert("No fields provided for patch!");
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
+        method: 'PATCH',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify(updateData) // Sends only the modified fields
+    });
+
+    const result = await response.json();
+    alert(result.message);
+    loadInterns();
+}
+    
+async function deleteIntern(id) {
+    const token = localStorage.getItem('token'); // Grab token
+    const response = await fetch(`http://localhost:3000/api/interns/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}` // CHANGED: Attached token here
+        }
+    });
+
+    const result = await response.json();
+    alert(result.message);
+    loadInterns();
+} 
+    
+loadInterns();
+</script>
 </body>
 </html>

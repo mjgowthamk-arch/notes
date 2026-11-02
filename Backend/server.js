@@ -5,6 +5,9 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt'); 
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsDoc = require('swagger-jsdoc');
+
 const { Pool } = require('pg');
 
 // Create a connection pool
@@ -21,6 +24,42 @@ const app = express();
 
 app.use(cors()); // Allow frontend to connect
 app.use(express.json()); // Allow server to read JSON data sent in requests
+
+
+// 1. Define Swagger Options / Metadata
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Intern Tracker API',
+            version: '1.0.0',
+            description: 'A secure REST API with JWT authentication and Role-Based Access Control',
+        },
+        servers: [
+            {
+                url: 'http://localhost:3000',
+            },
+        ],
+        components: {
+            securitySchemes: {
+                BearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                    description: 'Enter your JWT token obtained from /api/login',
+                },
+            },
+        },
+    },
+    // Tells swagger-jsdoc where to look for documentation comments (current file)
+    apis: ['./server.js'], 
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+
+// 2. Mount Swagger UI middleware
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 
 // register route to create a new user with hashed passwords
 app.post('/api/register', async (req, res) => {
@@ -47,6 +86,32 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     summary: Log in to get a JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *          application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - username
+ *                 - password
+ *               properties:
+ *                 username:
+ *                   type: string
+ *                 password:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Login successful, returns JWT token
+ *       401:
+ *         description: Invalid username or password
+ */
+
 // Login route to generate a JWT token
 app.post('/api/login', async (req, res) => {
     try {
@@ -58,7 +123,6 @@ app.post('/api/login', async (req, res) => {
             [username]
         );
 
-        // If user doesn't exist
         if (userResult.rows.length === 0) {
             return res.status(401).json({ message: "Invalid username or password!" });
         }
@@ -76,7 +140,7 @@ app.post('/api/login', async (req, res) => {
         const userPayload = {
             id: user.id,
             username: user.username,
-            role: user.role // pulled securely from the database row, not client!
+            role: user.role // from the database row, not client!
         };
 
         // 4. Sign the token
@@ -88,7 +152,8 @@ app.post('/api/login', async (req, res) => {
             token: token
         });
 
-    } catch (error) {
+    } 
+    catch (error) {
         console.error(error.message);
         res.status(500).json({ message: "Server error during login" });
     }
@@ -121,8 +186,9 @@ function requireAccess(req, res, next) {
 
 function requireAdmin(req, res, next) {
     if (req.user && req.user.role === 'admin') {
-        next(); // They are an admin, proceed!
-    } else {
+        next(); // This is an admin, proceed!
+    } 
+    else {
         res.status(403).json({ message: "Access forbidden: Admins only!" });
     }
 }
@@ -133,11 +199,26 @@ app.get('/api/users', requireAccess, requireAdmin, async (req, res) => {
     try {
         const allUsers = await pool.query("SELECT id, username, role FROM users ORDER BY id ASC");
         res.json(allUsers.rows);
-    } catch (error) {
+    } 
+    catch (error) {
         console.error(error.message);
         res.status(500).json({ message: "Database error" });
     }
 });
+
+/**
+ * @swagger
+ * /api/interns:
+ *   get:
+ *     summary: Get all interns (Requires Authentication)
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of interns
+ *       401:
+ *         description: Access denied, no token provided
+ */
 
 
 app.get('/api/interns', requireAccess, async (req, res) => {
@@ -147,7 +228,8 @@ app.get('/api/interns', requireAccess, async (req, res) => {
         
         // Send the database rows to the frontend UI
         res.json(allInterns.rows);
-    } catch (error) {
+    } 
+    catch (error) {
         console.error(error.message);
         res.status(500).json({ message: "Database error" });
     }
@@ -178,30 +260,6 @@ app.post('/api/interns', requireAccess, requireAdmin, async (req, res) => {
         // Send the saved SQL data back to the frontend
         res.json({ message: "Intern added!", data: newIntern.rows[0] });
 
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ message: "Database error" });
-    }
-});
-
-
-app.put('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
-    try {
-        const idToUpdate = req.params.id;
-        const newRole = req.body.role;
-        
-        // SQL command to update the role for a specific ID
-        const updateIntern = await pool.query(
-            "UPDATE interns SET role = $1 WHERE id = $2 RETURNING *",
-            [newRole, idToUpdate]
-        );
-        
-        // If no rows were updated, the ID doesn't exist
-        if (updateIntern.rows.length === 0) {
-            return res.status(404).json({ message: "Intern not found" });
-        }
-
-        res.json({ message: "Intern updated successfully!" });
     } 
     catch (error) {
         console.error(error.message);
@@ -209,14 +267,37 @@ app.put('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     }
 });
 
+app.put('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
+    try {
+        const idToUpdate = req.params.id;
+        const { name, role } = req.body;
+        
+        if (!name || !role) {
+            return res.status(400).json({ message: "PUT requests require both 'name' and 'role' for full replacement." });
+        }
+
+        const updateIntern = await pool.query(
+            "UPDATE interns SET name = $1, role = $2 WHERE id = $3 RETURNING *",
+            [name, role, idToUpdate]
+        );
+        
+        if (updateIntern.rows.length === 0) {
+            return res.status(404).json({ message: "Intern not found" });
+        }
+
+        res.json({ message: "Intern fully replaced successfully!", data: updateIntern.rows[0] });
+    } 
+    catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Database error" });
+    }
+});
 
 app.patch('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     try {
         const idToUpdate = req.params.id;
         const { name, role } = req.body;
         
-        // COALESCE ensures that if a field is not sent (undefined/null), 
-        // PostgreSQL keeps the existing value in the database instead of overwriting it.
         const updateIntern = await pool.query(
             `UPDATE interns 
              SET name = COALESCE($1, name), 
@@ -230,13 +311,12 @@ app.patch('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
             ]
         );
         
-        // If no rows were updated, the ID doesn't exist
         if (updateIntern.rows.length === 0) {
             return res.status(404).json({ message: "Intern not found" });
         }
 
         res.json({ 
-            message: "Intern updated successfully!", 
+            message: "Intern partially updated successfully!", 
             data: updateIntern.rows[0] 
         });
     } 
@@ -246,12 +326,9 @@ app.patch('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     }
 });
 
-
 app.delete('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     try {
         const idToDelete = req.params.id;
-        
-        // SQL command to delete the row matching the ID
         const deleteIntern = await pool.query(
             "DELETE FROM interns WHERE id = $1 RETURNING *",
             [idToDelete]
@@ -274,6 +351,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running live on http://localhost:${PORT}`);
     console.log(`Testing my database connection string: ${process.env.DATABASE_URL}`);
+    console.log(`Swagger docs available at http://localhost:3000/api-docs`);
 });
 
 

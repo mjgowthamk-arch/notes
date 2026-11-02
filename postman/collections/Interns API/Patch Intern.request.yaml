@@ -1,0 +1,35 @@
+$kind: http-request
+method: PATCH
+url: 'http://localhost:3000/api/interns/3'
+order: 5000
+body:
+  type: json
+  content: |-
+    {
+      "name": "admin"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+      
+      pm.test("Response confirms update", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('message');
+          pm.expect(jsonData.message).to.equal('Intern updated successfully!');
+      });
+      
+      pm.test("Response data has correct fields", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('data');
+          pm.expect(jsonData.data).to.have.property('id');
+          pm.expect(jsonData.data).to.have.property('name');
+          pm.expect(jsonData.data).to.have.property('role');
+      });
+      
+      pm.test("Response time is less than 2000ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
