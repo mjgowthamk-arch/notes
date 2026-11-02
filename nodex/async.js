@@ -32,6 +32,7 @@ server.get('/api/users/callback', (req,res)=>{
 server.get('/api/users/promise', (req, res) => {
 
     const query = 'select * from users';
+    
     // If no callback is provided, pool.query returns a Promise
     pool.query(query)
 
@@ -54,7 +55,7 @@ server.get('/api/users/async', async (req, res) => {
         // The server doesn't block here. It waits for Postgres to return the data,
         // while Node.js goes off to handle other incoming API requests.
         const result = await pool.query(query);
-        res.json({ message: "fetch success ggg", data: result.rows });
+        res.json({ message: "fetch success", data: result.rows });
     } 
 
     catch (error) {
