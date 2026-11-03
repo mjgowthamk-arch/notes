@@ -17,11 +17,11 @@ const manageFiles = async () => {
     const files = await fsPromises.readdir('.');
     console.log('Items in current folder:', files);
 
-    // --- New Stream Code Integrated ---
+
     console.log('Starting video copy...');
     
     // Read data in small chunks
-    const readStream = fs.createReadStream('large-video.mp4');
+    const readStream = fs.createReadStream('C:\\Users\\mjgow\\OneDrive\\Desktop\\notes\\Files\\v1.mp4');
     const writeStream = fs.createWriteStream('copy-video.mp4');
 
     // To make streams work with async/await, we wrap the pipe process in a Promise.

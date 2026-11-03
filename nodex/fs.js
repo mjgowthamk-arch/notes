@@ -1,6 +1,6 @@
 let fs=require('fs')
 
-fs.readFile('calc.js','utf8',function(err,data){
+fs.readFile('file.js','utf8',function(err,data){
     console.log(data)
 })
 
