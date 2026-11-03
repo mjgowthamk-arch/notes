@@ -1,5 +1,4 @@
-// 1. Import BOTH versions of fs
-const fsPromises = require('fs/promises'); // For await (writeFile, readFile, mkdir)
+const fsPromises = require('fs/promises'); // For await 
 const fs = require('fs');                  // For streams (createReadStream)
 
 const manageFiles = async () => {
@@ -7,7 +6,7 @@ const manageFiles = async () => {
     await fsPromises.writeFile('notes.txt', 'Learning Node.js is fun!');
     console.log('File created successfully.');
 
-    // 'utf-8' to get text, not a Buffer)
+    // 'utf-8' to get text, not a Buffer
     const data = await fsPromises.readFile('notes.txt', 'utf-8');
     console.log('File content:', data);
 
@@ -20,12 +19,11 @@ const manageFiles = async () => {
 
     console.log('Starting video copy...');
     
-    // Read data in small chunks
     const readStream = fs.createReadStream('C:\\Users\\mjgow\\OneDrive\\Desktop\\notes\\Files\\v1.mp4');
     const writeStream = fs.createWriteStream('copy-video.mp4');
 
-    // To make streams work with async/await, we wrap the pipe process in a Promise.
-    // This forces the function to pause here until the stream finishes copying.
+    // To make streams work with async/await, we wrap the pipe process in a Promise
+    // This forces the function to pause here until the stream finishes copying
     await new Promise((resolve, reject) => {
 
       // Pipe connects the read stream directly to the write stream

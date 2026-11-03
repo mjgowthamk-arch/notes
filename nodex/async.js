@@ -52,8 +52,6 @@ server.get('/api/users/async', async (req, res) => {
     const query = 'select * from users';
 
     try {
-        // The server doesn't block here. It waits for Postgres to return the data,
-        // while Node.js goes off to handle other incoming API requests.
         const result = await pool.query(query);
         res.json({ message: "fetch success", data: result.rows });
     } 

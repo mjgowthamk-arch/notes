@@ -7,7 +7,7 @@ const path = require('path');
 // Security & Auth Packages
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-const csrf = require('csurf');
+const csrf = require('csurf');  // Cross-Site Request Forgery
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -16,7 +16,7 @@ require('dotenv').config();
 const app = express();
 
 // =========================================================================
-// CONCEPT 3: PROTECTING AGAINST COMMON VULNERABILITIES (XSS & CSRF)
+//  PROTECTING AGAINST COMMON VULNERABILITIES (XSS & CSRF)
 // =========================================================================
 
 // 1. XSS (Cross-Site Scripting) Protection
@@ -43,7 +43,7 @@ const csrfProtection = csrf({ cookie: true });
 
 
 // =========================================================================
-// CONCEPT 3 (Continued): PROTECTING AGAINST SQL INJECTION
+//  PROTECTING AGAINST SQL INJECTION
 // =========================================================================
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -64,7 +64,7 @@ const getUserByEmail = async (email) => {
 
 
 // =========================================================================
-// CONCEPT 1: USER AUTHENTICATION (JWT & PASSPORT.JS)
+//  USER AUTHENTICATION (JWT & PASSPORT.JS)
 // =========================================================================
 
 // A custom extractor function to pull the JWT out of the HTTP-Only cookie
@@ -135,7 +135,7 @@ app.post('/auth/login', csrfProtection, async (req, res) => {
 });
 
 // =========================================================================
-// CONCEPT 2: SECURING API ENDPOINTS
+//  SECURING API ENDPOINTS
 // =========================================================================
 
 // By placing `passport.authenticate('jwt', { session: false })` in the middle of the route,
@@ -150,7 +150,7 @@ app.get('/api/dashboard', passport.authenticate('jwt', { session: false }), (req
 
 
 // =========================================================================
-// CONCEPT 4: HTTPS IN NODE.JS
+//  HTTPS IN NODE.JS
 // =========================================================================
 
 // HTTPS encrypts the connection between the browser and the server.

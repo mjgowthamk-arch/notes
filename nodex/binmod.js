@@ -30,12 +30,10 @@ const server = http.createServer(async (req, res) => {
     }
   } 
   
-  // Catch-All (404 Fallback)
   else {
     res.writeHead(404);
     res.end("Not Found");
   }
 });
 
-// Booting the Server
 server.listen(3000, () => console.log('Server running'));

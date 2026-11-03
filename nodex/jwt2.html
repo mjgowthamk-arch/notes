@@ -5,11 +5,9 @@
 </head>
 <body>
     <form id="loginForm">
-        <!-- Added autocomplete attributes to fix the Chrome warning -->
         <input type="email" id="email" placeholder="Email" autocomplete="username" required>
         <input type="password" id="pass" placeholder="Password" autocomplete="current-password" required>
         
-        <!-- Removed onclick, went back to a standard button with an ID -->
         <button type="button" id="loginBtn">Log In</button>
     </form>
 
@@ -17,9 +15,8 @@
     <button id="dashboardBtn">View Secure Dashboard</button>
 
     <script>
-        // We attach the click event via JavaScript, which Helmet prefers!
         document.getElementById('loginBtn').addEventListener('click', async (e) => {
-            e.preventDefault(); // Stops any refreshing
+            e.preventDefault(); 
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('pass').value;

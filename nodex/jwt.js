@@ -29,7 +29,6 @@ const getUserByEmail = async (email) => {
 
 // 2. Generating a JWT
 const generateToken = (userId) => {
-    // Signs a token containing the userId, valid for 1 hour
     return jwt.sign({ id: userId }, 'YOUR_SECRET_KEY', { expiresIn: '1h' });
 };
 
@@ -38,7 +37,10 @@ const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // "Bearer <token>"
     
-    if (!token) return res.status(401).json({ error: "Access Denied" });
+    if (!token) {
+        return res.status(401).json({ error: "Access Denied" });
+    }
+
     jwt.verify(token, 'YOUR_SECRET_KEY', (err, user) => {
         if (err) return res.status(403).json({ error: "Invalid Token" });
         req.user = user; // Attach decoded user payload to request
@@ -72,9 +74,8 @@ app.post('/auth', async (req, res) => {
 
 // 5. Using authenticateToken to protect a route
 
-// Notice how authenticateToken is placed in the middle as a middleware worker
 app.get('/dashboard', authenticateToken, (req, res) => {
-    // If they make it here, the token was valid!
+
     res.json({ message: "Welcome to your private dashboard", userId: req.user.id });
 });
 

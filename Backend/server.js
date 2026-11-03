@@ -26,7 +26,7 @@ app.use(cors()); // Allow frontend to connect
 app.use(express.json()); // Allow server to read JSON data sent in requests
 
 
-// 1. Define Swagger Options / Metadata
+// Define Swagger Options / Metadata
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
@@ -57,7 +57,6 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-// 2. Mount Swagger UI middleware
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
@@ -127,7 +126,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ message: "Invalid username or password!" });
         }
 
-        const user = userResult.rows[0]; // This is the user row from your DB
+        const user = userResult.rows[0]; // User row from your DB
 
         // 2. Compare the typed password with the hashed password stored in PostgreSQL
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
@@ -136,11 +135,11 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ message: "Invalid username or password!" });
         }
 
-        // 3. Password is correct! Create the JWT payload
+        // 3. Create the JWT payload if password is valid
         const userPayload = {
             id: user.id,
             username: user.username,
-            role: user.role // from the database row, not client!
+            role: user.role // from the database row
         };
 
         // 4. Sign the token
@@ -170,14 +169,11 @@ function requireAccess(req, res, next) {
         }
 
         const token = authHeader.split(' ')[1];
-
-        // Verify the token matches the secret
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Attach user info to request object so downstream routes know who is acting
         req.user = decoded;
         
-        next(); // Token is valid, proceed to the actual route handler!
+        next(); 
     } 
     catch (error) {
         return res.status(403).json({ message: "Invalid or expired token!" });
@@ -186,7 +182,7 @@ function requireAccess(req, res, next) {
 
 function requireAdmin(req, res, next) {
     if (req.user && req.user.role === 'admin') {
-        next(); // This is an admin, proceed!
+        next(); 
     } 
     else {
         res.status(403).json({ message: "Access forbidden: Admins only!" });
@@ -194,7 +190,7 @@ function requireAdmin(req, res, next) {
 }
 
 
-// Get all registered users (Admin only)
+// Get all registered users 
 app.get('/api/users', requireAccess, requireAdmin, async (req, res) => {
     try {
         const allUsers = await pool.query("SELECT id, username, role FROM users ORDER BY id ASC");
@@ -220,7 +216,7 @@ app.get('/api/users', requireAccess, requireAdmin, async (req, res) => {
  *         description: Access denied, no token provided
  */
 
-
+// Get all registered Interns 
 app.get('/api/interns', requireAccess, async (req, res) => {
     try {
         // Grab everything from the interns table, sorted by ID so the list stays in order
@@ -235,7 +231,7 @@ app.get('/api/interns', requireAccess, async (req, res) => {
     }
 });
 
-
+// Create a new intern
 app.post('/api/interns', requireAccess, requireAdmin, async (req, res) => {
     try {
         // Grab the data sent from the frontend
@@ -267,6 +263,7 @@ app.post('/api/interns', requireAccess, requireAdmin, async (req, res) => {
     }
 });
 
+// Update an intern
 app.put('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     try {
         const idToUpdate = req.params.id;
@@ -293,6 +290,7 @@ app.put('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     }
 });
 
+// Partially update an intern
 app.patch('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     try {
         const idToUpdate = req.params.id;
@@ -326,6 +324,7 @@ app.patch('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     }
 });
 
+// Delete an intern
 app.delete('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => {
     try {
         const idToDelete = req.params.id;
@@ -345,7 +344,6 @@ app.delete('/api/interns/:id', requireAccess, requireAdmin, async (req, res) => 
     }
 });
 
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -353,77 +351,3 @@ app.listen(PORT, () => {
     console.log(`Testing my database connection string: ${process.env.DATABASE_URL}`);
     console.log(`Swagger docs available at http://localhost:3000/api-docs`);
 });
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-// Temporary Database (runs in computer memory)
-let interns = [
-    { id: 1, name: "Rahul", role: "Frontend Intern" }
-];
-
-// 1. READ (GET Request) - Send data to frontend
-
-app.get('/api/interns', (req, res) => {
-    res.json(interns);
-});
-
-// 2. CREATE (POST Request) - Receive data from frontend
-
-app.post('/api/interns', (req, res) => {
-    // Check if the name already exists in our array
-    const existingIntern = interns.find(intern => intern.name === req.body.name);
-    
-    if (existingIntern) {
-        // If they exist, send an error back and STOP
-        return res.status(400).json({ message: "This intern already exists!" });
-    }
-
-    // If they don't exist, add them normally
-    const newIntern = {
-        id: interns.length + 1,
-        name: req.body.name,
-        role: req.body.role
-    };
-    interns.push(newIntern);
-    res.json({ message: "Intern added!", data: newIntern });
-});
-
-// 3. UPDATE (PUT Request) - Modify existing data
-app.put('/api/interns/:id', (req, res) => {
-    const idToUpdate = parseInt(req.params.id);
-    
-    // Find the specific intern in our array
-    const intern = interns.find(i => i.id === idToUpdate);
-    
-    if (!intern) {
-        return res.status(404).json({ message: "Intern not found" });
-    }
-
-    // Update their role with the new data sent from frontend
-    intern.role = req.body.role;
-    
-    res.json({ message: "Intern updated successfully!" });
-});
-
-// 4. DELETE Request - Remove data
-app.delete('/api/interns/:id', (req, res) => {
-    // req.params.id grabs the number from the URL
-    const idToDelete = parseInt(req.params.id);
-    
-    // Filter out the intern with that ID
-    interns = interns.filter(intern => intern.id !== idToDelete);
-    
-    res.json({ message: "Intern removed successfully!" });
-});
-
-*/
