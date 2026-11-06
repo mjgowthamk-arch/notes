@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/login.png" type="image/png">
+    <title>Login - KTT IMS</title>
+    <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: whitesmoke;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    
+    .login-image img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;        
+    }
+
+    .wrapper {
+        display: flex; 
+        width: 900px;
+        height: 600px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .login-image {
+        flex: 1;    
+    }
+
+    .login-form {
+        flex: 1;     
+        background-color: #334155;
+        color: white;
+        padding: 40px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;    
+    }
+
+    .login-form h1 {
+        text-align: center;
+        margin: 0 0 10px 0;
+        font-size: 30px;    
+    }
+
+    .login-form h2 {
+        text-align: center;
+        margin: 0 0 25px 0;
+        font-size: 20px;
+        font-weight: normal;
+        color: #cbd5e1;    
+    }
+
+    .login-form label {
+        display: block;
+        font-size: 15px;
+        margin-top: 10px;    
+    }
+
+    .login-form input,
+    .login-form select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;    
+        margin-bottom: 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;        
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        background-color: blue;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: bold;
+    }
+
+    .login-btn:hover {
+        background-color: #0056b3;
+        transition: all 0.5s ease;
+    }    
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="login-image">
+            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=900&q=80" alt="Team Work">
+        </div>
+
+        <div class="login-form">
+
+            <h1>KT Telematics Solutions</h1>
+            <h2>Intern Management Portal</h2>
+
+            <form id="loginForm" onsubmit="event.preventDefault(); login();">
+
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+
+                <label for="role">Role:</label>
+                <select id="role" name="role" required>
+                    
+                    <option value="">Select Role</option>
+                    <option value="admin">HR Admin</option>
+                    <option value="Manager 1">Manager 1</option>
+                    <option value="Manager 2">Manager 2</option>
+                    <option value="Intern">Intern</option>
+               
+                </select>
+            
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+    
+<script>
+// 1. Create an async function named 'login'
+    // a. Prevent default form submission (if not done in HTML)
+    // b. Read and trim values from the username, password, and role dropdown inputs
+    // c. Map the selected dropdown role to the database roles ('admin', 'manager', or 'intern')
+    // d. Open a try-catch block
+        // e. Use the fetch() API to send a POST request to 'http://localhost:3000/login'
+        // f. Include 'Content-Type': 'application/json' in the headers
+        // g. Pass the email, password, and mapped role in the body as a JSON string
+        // h. Await the response and parse it as JSON
+        // i. Check if response.ok is true
+            // j. If true, save the returned JWT token to localStorage as 'token'
+            // k. Save the user object (along with the specific dropdown role) to localStorage as 'currentUser'
+            // l. Redirect the browser to the correct dashboard based on the mapped role
+        // m. If response.ok is false, alert the user with the error message from the backend
+    // n. In the catch block, alert the user that there is a server error
+
+    async function login(){
+    const email= document.getElementById('username').value.trim();
+    const password= document.getElementById('password').value.trim();
+    const role= document.getElementById('role').value.trim();
+
+       
+    let mappedRole = 'intern';
+    if (role === 'admin') {
+        mappedRole = 'admin';
+    } else if (role === 'Manager 1' || role === 'Manager 2') {
+        mappedRole = 'manager';
+    } else if (role === 'Intern') {
+        mappedRole = 'intern';
+    }
+
+    try {
+        const response=await fetch('http://localhost:3000/login', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email, password, role:mappedRole})
+        });
+
+        const data=await response.json();
+
+        if (response.ok){
+            localStorage.setItem('token', data.token);
+
+            data.user.exactRole = role;
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+
+           window.location.href = `${mappedRole}.html`;
+
+        } 
+        else {
+            alert('Invalid credentials. Please try again.');
+        }
+
+    } catch (err){
+        alert('Server error.')
+
+    }
+}
+</script>
+
+</body>
+</html>

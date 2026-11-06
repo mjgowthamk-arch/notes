@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+
+    <link rel="stylesheet" href="toast.css">
+    <script src="toast.js"></script>
+
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: lightgray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .container {
+            height: 100%;
+            padding: 30px; 
+            background-color: #f8fafc; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 5px;
+        }
+
+        .intern-profile {
+            flex: 1;
+            border-right: 2px solid #e2e8f0;
+            background-color: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .intern-profile h1 {
+            color: darkblue;
+            margin: 0 0 5px 0;
+            font-size: 30px;
+        }
+
+        .intern-profile h2 {
+            color: darkblue;
+            margin: 0 0 20px 0;
+            font-size: 20px;
+        }
+
+        .info-card {
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            font-size: 15px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        .logout-btn {
+            align-self: flex-start;
+            background: red;
+            color: white;
+            font-weight: bold;
+            margin-top: 20px;
+            border: none;
+            padding:5px 8px; 
+            border-radius:3px;
+            cursor:pointer;
+        }
+
+        .logout-btn:hover {
+            background: #772020;      
+            transition: all 0.5s ease;
+
+        }
+
+        .intern-task {
+            flex: 2;
+            background-color: white;
+            border-radius: 5px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intern-task h1 {
+            color: darkblue;
+            margin: 0 0 15px 0;
+            font-size: 28px;
+        }
+
+        .table-container {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 2px solid black;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: gainsboro;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="intern-profile">
+            <div class="container">
+                <h1>Student Dashboard</h1>
+                <h2 id="welcomeText">Welcome!</h2>
+
+                <div class="info-card">
+                    <div class="info-label">Assigned Role</div>
+                    <div class="info-value" id="roleValue">-</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-label">Assigned Manager</div>
+                    <div class="info-value" id="managerValue">-</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-label">Average Performance</div>
+                    <div class="info-value" id="avgRating">-</div>
+                </div>
+            </div>
+
+            <button type="button" class="logout-btn" onclick="logout();">Logout</button>
+        </div>
+
+        <div class="intern-task">
+            <h1>My Assigned Tasks & Scores</h1>
+
+            <div class="table-container">
+                <table id="performance-table">
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+// 1. Route Guard
+    // a. Read 'token' and 'currentUser' from localStorage
+    // b. If missing, or role is not 'intern', alert and redirect to login.html
+
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('currentUser'));
+
+if (!token || !user || user.role !== 'intern') {
+    alert('Access Denied! Please log in first.');
+    window.location.href = 'login.html';
+}
+
+const authHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+};
+
+// 2. Create a reusable authHeaders object containing 'Content-Type' and 'Authorization: Bearer <token>'
+
+// 3. Create a logout() function (clear localStorage, redirect to login)
+
+function logout() {
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+}
+
+// 4. Create an async loadStudentData() function
+    // a. Fetch interns from '/api/interns' using authHeaders
+    // b. Handle 401/403 status codes by calling logout()
+    // c. Find the specific student object matching the currentUser's email
+    // d. If not found, alert the user and call logout()
+    
+    // e. Update the DOM elements: welcomeText, roleValue, and managerValue
+
+async function loadStudentData() {
+    const res = await fetch('http://localhost:3000/api/interns', { headers: authHeaders });
+    if (res.status === 401 || res.status === 403) return logout();
+    
+    const interns = await res.json();
+    const student = interns.find(i => i.email.toLowerCase() === user.email.toLowerCase());
+
+    if (!student) {
+        alert('Student record not found!');
+        return logout();
+    }
+
+    document.getElementById('welcomeText').textContent = `Welcome ${student.name}!`;
+    document.getElementById('roleValue').textContent = student.role;
+    document.getElementById('managerValue').textContent = student.manager;
+
+    const gradedScores = student.tasks.filter(t => t.score !== '-' && !isNaN(t.score)).map(t => Number(t.score));
+    if (gradedScores.length > 0) {
+        const sum = gradedScores.reduce((a, b) => a + b, 0);
+        document.getElementById('avgRating').textContent = `${(sum / gradedScores.length).toFixed(1)} / 100 (Tasks Completed: ${gradedScores.length})`;
+    } else {
+        document.getElementById('avgRating').textContent = '-';
+    }
+
+    const table = document.getElementById('performance-table');
+    table.innerHTML = `<tr><th>Task Assigned</th><th>Status</th><th>Score</th><th>Feedback</th></tr>`;
+
+    if (student.tasks.length === 0) {
+        return table.insertRow().innerHTML = `<td colspan=4>No tasks assigned yet.</td>`;
+    }
+
+    student.tasks.forEach(task => {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = task.title;
+        
+        row.insertCell(1).innerHTML = `
+            <select onchange="updateTaskStatus(${task.id}, this.value)" style="padding: 4px 8px; border-radius: 4px;">
+                <option value='Pending' ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value='In Progress' ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value='Completed' ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+        `;
+
+        const scoreCell = row.insertCell(2);
+        scoreCell.textContent = task.score !== '-' ? `${task.score}/100` : '-';
+        if (task.score >= 80) scoreCell.style.color = 'green';
+        else if (task.score < 80 && task.score >= 50) scoreCell.style.color = 'orange';
+        else if (task.score < 50 && task.score !== '-') scoreCell.style.color = 'red';
+
+        row.insertCell(3).textContent = task.feedback || '-';
+    });
+}
+    
+    // f. Filter the student's tasks to find numerical grades and calculate the average
+    // g. Update the 'avgRating' DOM element with the average and task count
+    
+    // h. Select the performance table and reset its innerHTML to show headers
+    // i. If the student has no tasks, insert a "No tasks assigned" row
+    
+    // j. Loop through the student's tasks
+        // k. Create rows and insert cells for Task Title, Status (dropdown), Score, and Feedback
+        // l. Apply green/orange/red styling to the score text based on its value
+
+// 5. Create an async updateTaskStatus(taskId, newStatus) function
+    // a. Fetch PUT to `/api/tasks/${taskId}/status` with authHeaders and the new status
+    // b. Show a success toast indicating the status was updated
+
+async function updateTaskStatus(taskId, newStatus) {
+    await fetch(`http://localhost:3000/api/tasks/${taskId}/status`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify({ status: newStatus })
+    });
+    showToast(`Status updated to "${newStatus}"!`);
+}
+
+window.onload = loadStudentData;
+
+// 6. Assign loadStudentData to window.onload
+</script>
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    
+    <link rel="stylesheet" href="toast.css">
+    <script src="toast.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: lightgray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; 
+        }
+
+        .wrapper {
+            display: flex; 
+            width: 100%;  
+            height: 100vh;
+        }
+
+        .admin-dashboard {
+            flex: 1;
+            border-right: 2px solid #e2e8f0;
+            background-color: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .admin-dashboard h1 {
+            color: darkblue;   
+            margin: 0 0 5px 0;
+            font-size: 30px;
+        }
+
+        .admin-dashboard h2 {
+            color: darkblue;
+            margin: 0 0 20px 0;
+            font-size: 20px;
+        }
+
+        .admin-dashboard h3 {
+            color: darkgreen;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+
+        .admin-dashboard label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .admin-dashboard input,
+        .admin-dashboard select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .form-container {
+            height: 100%;
+            padding: 30px; 
+            background-color: #f8fafc; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: blue;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .add-btn:hover {
+            background-color: #0056b3;
+            transition: all 0.5s ease;
+
+        }
+
+        .export-btn {
+            background-color: #078960;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .export-btn:hover {
+            background-color: #047857;
+        }
+
+        .logout-btn {
+            align-self: flex-start;
+            background: red;
+            color: white;
+            font-weight: bold;
+            margin-top: 20px;
+            border: none;
+            padding:5px 8px; 
+            border-radius:3px;
+            cursor:pointer;
+        }
+
+        .logout-btn:hover {
+            background: #c74040;   
+            transition: all 0.5s ease;
+
+        }
+        
+        .intern-list {
+            flex: 2;
+            padding: 30px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intern-list h1 {
+            color: darkblue;
+            margin: 0;
+        }
+
+        .table-container {
+            overflow-y:auto;
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border: 2px solid black;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: gainsboro;
+        }
+
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background-color: #b91c1c;
+            transition: all 0.5s ease;
+
+        }
+
+        .ov-box {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .interns-info {
+            flex: 1;
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .box {
+            font-size: 13px;
+            font-weight: bold;
+            color: #6a7990;
+        }
+
+        .box-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3a8a; 
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="admin-dashboard">
+            <div class="form-container">
+                <h1>Admin Dashboard</h1>
+                <h2>Welcome, HR Admin!</h2>
+                
+                <h3>Add New Intern</h3>
+
+                <form id="addIntern" onsubmit="event.preventDefault(); addIntern();">
+                    <label for="internName">Full Name:</label>
+                    <input type="text" id="internName" name="internName" required>
+
+                    <label for="internEmail">Email:</label>
+                    <input type="email" id="internEmail" name="internEmail" required>
+
+                    <label for="internRole">Role:</label>
+                    <select id="internRole" name="internRole" required>
+                        <option value="">Select Role</option>
+                        <option value="Full Stack - Intern">Full Stack - Intern</option>
+                        <option value="Android - Intern">Android - Intern</option>
+                    </select>
+
+                    <label for="manager">Assign to Manager:</label>
+                    <select id="manager" name="manager" required>
+                        <option value="">Select Manager</option>
+                        <option value="Manager 1">Manager 1</option>
+                        <option value="Manager 2">Manager 2</option>
+                    </select>
+
+                    <button type="submit" class="add-btn">Add Intern</button>
+                </form>
+            </div>
+            
+            <button type="button" class="logout-btn" onclick="logout();">Logout</button>
+        </div>
+
+        <div class="intern-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h1>Intern List</h1>
+                <button type="button" class="export-btn" onclick="exportToCSV();">Export CSV</button>
+            </div>
+
+
+            <div class="ov-box">
+                <div class="interns-info">
+                    <span class="box">Total Interns:</span>
+                    <span class="box-value" id="totalInternsVal">0</span>
+                </div>
+
+                <div class="interns-info">
+                    <span class="box">Total Task Assigned:</span>
+                    <span class="box-value" id="totalTasksVal">0</span>                
+                </div>
+
+                <div class="interns-info">
+                    <span class="box">Average Performance:</span>
+                    <span class="box-value" id="overallAvgVal">-</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="adminSearch" placeholder="Search interns by name, email, or role..." 
+                onkeyup="filterAdminTable();" style="width: 100%; padding: 9px 14px; 
+                border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+            </div>            
+     
+            <div class="table-container">
+                <table id="intern-table">
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+// 1. Route Guard
+    // a. Read 'token' and 'currentUser' from localStorage
+    // b. Parse currentUser into a JSON object
+    // c. If either is missing, or the user's role is not 'admin', alert the user and redirect to login.html
+
+const token=localStorage.getItem('token');
+const currentUser=localStorage.getItem('currentUser');
+
+if (!token || !currentUser){
+    alert('Login as admin.')
+    window.location.href='login.html'
+}
+
+// 2. Create a reusable authHeaders object containing 'Content-Type' and 'Authorization: Bearer <token>'
+
+const authHeader= {
+    'Content-Type':'application/json',
+    'Authorization':`Bearer ${token}`
+}
+
+// 3. Create a logout() function
+    // a. Remove 'currentUser' and 'token' from localStorage
+    // b. Redirect to login.html
+
+function logout(){
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    window.location.href='login.html'
+}
+
+// 4. Create an async fetchInterns() function
+    // a. Fetch from 'http://localhost:3000/api/interns' using the authHeaders
+    // b. If the response status is 401 or 403, call logout() (token expired)
+    // c. Return the parsed JSON response
+
+async function fetchInterns(){
+    const response=await fetch('http://localhost:3000/api/interns', {headers:authHeader})
+    const data=await response.json();
+
+    if (response.status==401 || response.status==403){
+        return logout();
+    }
+    return data;
+}
+
+// 5. Create an async addIntern() function
+    // a. Get and trim values from the add intern form
+    // b. Fetch POST to '/api/interns' with authHeaders and the form data in the body
+    // c. If successful, show a success toast, reset the form, and call showIntern()
+    // d. If it fails, show an error toast
+
+async function addIntern() {
+    const name = document.getElementById('internName').value.trim();
+    const email = document.getElementById('internEmail').value.trim();
+    const role = document.getElementById('internRole').value.trim();
+    const manager = document.getElementById('manager').value.trim();
+
+    const response = await fetch('http://localhost:3000/api/interns', {
+        method: 'POST',
+        headers: authHeader,
+        body: JSON.stringify({ name, email, role, manager })
+    });
+
+    if (response.ok) {
+        showToast(`Intern ${name} added successfully!`, 'success');
+        document.getElementById('addIntern').reset();
+        showIntern();
+    } else {
+        showToast("Error adding intern or email exists.", "error");
+    }
+}
+
+// 6. Create an async showIntern() function
+    // a. Call fetchInterns() and store the result
+    // b. Select the intern table and reset its innerHTML to show the table headers
+    // c. If the interns array is empty, show a "No interns yet" row and reset summary counters to 0, then return
+    
+async function showIntern() {
+    const interns = await fetchInterns();
+    if (!interns) return; 
+
+    const table = document.getElementById('intern-table');
+    table.innerHTML = `
+        <tr>
+            <th>Name</th><th>Email</th><th>Role</th><th>Manager</th><th>Average Task Points</th><th>Action</th>
+        </tr>
+    `;
+
+    if (interns.length === 0) {
+        table.insertRow().innerHTML = `<td colspan="6" style="text-align:center; padding: 20px;">No interns yet.</td>`;
+        document.getElementById('totalInternsVal').textContent = '0';
+        document.getElementById('totalTasksVal').textContent = '0';
+        document.getElementById('overallAvgVal').textContent = '-';
+        return;
+    }
+
+    let totalTaskCount = 0;
+    let allGradedScores = [];
+
+    interns.forEach(intern => {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = intern.name;
+        row.insertCell(1).textContent = intern.email;
+        row.insertCell(2).textContent = intern.role;
+        row.insertCell(3).textContent = intern.manager;
+
+        const returnVal = calculateTaskAvg(intern);
+        let a = row.insertCell(4);
+        a.textContent = returnVal;
+
+        if (returnVal !== '-') {
+            const val = parseFloat(returnVal);
+            if (val >= 80) a.style.color = 'green';
+            else if (val < 80 && val >= 50) a.style.color = 'orange';
+            else a.style.color = 'red';
+        }
+
+        row.insertCell(5).innerHTML = `<button class='delete-btn' onclick="deleteIntern('${intern.email}');">Delete</button>`;
+
+        intern.tasks.forEach(task => {
+            totalTaskCount++;
+            if (typeof task.score === "number" || (!isNaN(task.score) && task.score !== '-')) {
+                allGradedScores.push(Number(task.score));
+            }
+        });
+    });
+
+    document.getElementById('totalInternsVal').textContent = interns.length;
+    document.getElementById('totalTasksVal').textContent = totalTaskCount;
+
+    if (allGradedScores.length >= 1) {
+        const sum = allGradedScores.reduce((sum, i) => sum + i, 0);
+        const avg = (sum / allGradedScores.length).toFixed(1);
+        document.getElementById('overallAvgVal').textContent = `${avg} / 100`;
+    } else {
+        document.getElementById('overallAvgVal').textContent = '-';
+    }
+}
+    // d. Initialize total task and graded score counters
+    // e. Loop through the interns array
+        // f. Create a new table row and insert cells for Name, Email, Role, and Manager
+        // g. Calculate the average task score using calculateTaskAvg()
+        // h. Apply green/orange/red styling based on the average score
+        // i. Insert an action cell with a Delete button calling deleteIntern(email)
+        // j. Loop through the intern's tasks to increment the total task counter and collect graded scores
+        
+    // k. Update the DOM elements for Total Interns and Total Tasks
+    // l. Calculate the overall average from the collected graded scores and update the DOM
+
+// 7. Create calculateTaskAvg(intern)
+    // a. Filter the intern's tasks for valid, numerical scores
+    // b. Calculate and return the average out of 100, or '-' if no graded tasks exist
+
+function calculateTaskAvg(intern) {
+    const graded = intern.tasks.filter(t => t.score !== '-' && !isNaN(t.score)).map(t => Number(t.score));
+    if (graded.length === 0) return '-';
+    const sum = graded.reduce((sum, i) => sum + i, 0);
+    return `${(sum / graded.length).toFixed(1)} / 100`;
+}
+
+// 8. Create an async deleteIntern(email) function
+    // a. Prompt the user for confirmation
+    // b. If confirmed, fetch DELETE to `/api/interns/${email}` with authHeaders
+    // c. Show a success toast and call showIntern()
+
+async function deleteIntern(email) {
+    if (!confirm('Are you sure you want to delete this intern?')) return;
+    
+    await fetch(`http://localhost:3000/api/interns/${email}`, { 
+        method: 'DELETE',
+        headers: authHeader
+    });
+    showToast(`Intern deleted successfully!`, 'success');
+    showIntern();
+}
+
+// 9. Create filterAdminTable() for live search (keep your existing logic)
+
+function filterAdminTable() {
+    const searchVal = document.getElementById('adminSearch').value.toLowerCase();
+    const rows = document.getElementById('intern-table').getElementsByTagName('tr');
+    for (let i = 1; i < rows.length; i++) {
+        rows[i].style.display = rows[i].textContent.toLowerCase().includes(searchVal) ? '' : 'none';
+    }
+}
+
+// 10. Create an async exportToCSV() function
+    // a. Fetch interns data
+    // b. Build a CSV string by looping through interns and their tasks
+    // c. Create a Blob and trigger a download via a temporary <a> tag
+async function exportToCSV() {
+    const interns = await fetchInterns();
+    if (!interns || interns.length === 0) return showToast("No data to export!", 'error');
+
+    let csv = "Intern Name,Email,Role,Manager,Task Assigned,Status,Score,Average Score\n";
+    interns.forEach(intern => {
+        const avg = calculateTaskAvg(intern);
+        if (intern.tasks.length === 0) {
+            csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","No Task","N/A","N/A","${avg}"\n`;
+        } else {
+            intern.tasks.forEach(t => {
+                csv += `"${intern.name}","${intern.email}","${intern.role}","${intern.manager}","${t.title.replace(/"/g, '""')}","${t.status}","${t.score}","${avg}"\n`;
+            });
+        }
+    });
+
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    let tag = document.createElement('a');
+    tag.href = url;
+    tag.download = 'ktt_intern_tasks.csv';
+    document.body.appendChild(tag);
+    tag.click();
+    document.body.removeChild(tag);
+}
+// 11. Assign showIntern to window.onload
+window.onload = showIntern;
+</script>
+
+</body>
+</html>
